@@ -25,7 +25,7 @@ async def get_historical_weather_for_flight(flight: FlightRecord, repo: Reposito
         return []
     first = flight.telemetry[0]
     start = first.timestamp.date().isoformat()
-    cache_key = f"historical:{first.latitude:.3f}:{first.longitude:.3f}:{start}"
+    cache_key = f"historical:v2:{first.latitude:.3f}:{first.longitude:.3f}:{start}"
     cached = repo.get_weather_cache(cache_key)
     if cached:
         return cached["response_json"]
@@ -40,7 +40,7 @@ async def get_historical_weather_for_flight(flight: FlightRecord, repo: Reposito
 
 
 async def get_forecast_windows(lat: float, lon: float, repo: Repository, settings: Settings) -> list[dict[str, Any]]:
-    cache_key = f"forecast:{lat:.3f}:{lon:.3f}:{datetime.now(timezone.utc).strftime('%Y-%m-%d-%H')}"
+    cache_key = f"forecast:v2:{lat:.3f}:{lon:.3f}:{datetime.now(timezone.utc).strftime('%Y-%m-%d-%H')}"
     cached = repo.get_weather_cache(cache_key)
     if cached:
         return cached["response_json"]

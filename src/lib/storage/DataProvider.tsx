@@ -1,10 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { FlightRecord, ParserResult, UploadedDataState, WeatherMode, WeatherProviderStatus } from "@/types";
 import { parseUploadedFlightFile } from "@/lib/parsers/flightParsers";
-import { getWeatherProviderStatus } from "@/lib/weather/providers";
+import { getHistoricalWeatherForFlight, getWeatherProviderStatus, joinWeatherToTelemetry } from "@/lib/weather/providers";
 import { isBackendConfigured, uploadFlightToBackend } from "@/lib/api/client";
+import { deriveFlightMetrics } from "@/lib/analytics/metrics";
+import { generateFlightEvents, generateFlightTags } from "@/lib/data/events";
 
 type DataContextValue = UploadedDataState & {
   importing: boolean;
@@ -28,16 +30,71 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (typeof window === "undefined") return initialState;
     try {
       const stored = window.localStorage.getItem(storageKey);
-      return stored ? { ...initialState, ...JSON.parse(stored) } : initialState;
+      if (!stored) return initialState;
+      const parsed = { ...initialState, ...JSON.parse(stored) } as UploadedDataState;
+      return {
+        ...parsed,
+        flights: parsed.flights.map((flight) => {
+          const metrics = deriveFlightMetrics(flight.telemetry);
+          return {
+            ...flight,
+            metrics,
+            events: generateFlightEvents(flight.telemetry),
+            tags: generateFlightTags({ metrics, featureAvailability: flight.featureAvailability }),
+          };
+        }),
+      };
     } catch {
       return initialState;
     }
   });
   const [importing, setImporting] = useState(false);
+  const weatherJoinRunning = useRef(false);
 
   useEffect(() => {
     window.localStorage.setItem(storageKey, JSON.stringify(state));
   }, [state]);
+
+  useEffect(() => {
+    const pending = state.flights.filter((flight) => !flight.weatherJoined);
+    if (state.weatherMode !== "open-meteo" || !pending.length || weatherJoinRunning.current) return;
+    weatherJoinRunning.current = true;
+    void Promise.all(pending.map(async (flight) => {
+      const weather = await getHistoricalWeatherForFlight(flight, state.weatherMode);
+      if (!weather.length) return flight;
+      const telemetry = joinWeatherToTelemetry(flight.telemetry, weather);
+      const metrics = deriveFlightMetrics(telemetry);
+      return {
+        ...flight,
+        telemetry,
+        metrics,
+        events: generateFlightEvents(telemetry),
+        tags: generateFlightTags({ metrics, featureAvailability: flight.featureAvailability }),
+        weatherJoined: true,
+      };
+    })).then((joinedFlights) => {
+      const updates = new Map(joinedFlights.map((flight) => [flight.id, flight]));
+      setState((current) => ({
+        ...current,
+        flights: current.flights.map((flight) => updates.get(flight.id) ?? flight),
+        lastWeatherProviderStatus: getWeatherProviderStatus("open-meteo"),
+        updatedAt: new Date().toISOString(),
+      }));
+    }).catch(() => {
+      setState((current) => ({
+        ...current,
+        lastWeatherProviderStatus: {
+          mode: "open-meteo",
+          available: false,
+          label: "Weather unavailable",
+          message: "Historical weather could not be joined. Flight telemetry remains available.",
+          lastChecked: new Date().toISOString(),
+        },
+      }));
+    }).finally(() => {
+      weatherJoinRunning.current = false;
+    });
+  }, [state.flights, state.weatherMode]);
 
   const value = useMemo<DataContextValue>(
     () => ({

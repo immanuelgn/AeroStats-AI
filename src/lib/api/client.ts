@@ -1,4 +1,5 @@
 import type { FlightRecord, ParserResult } from "@/types";
+import { deriveFlightMetrics } from "@/lib/analytics/metrics";
 
 export type BackendHealth = {
   ok: boolean;
@@ -109,7 +110,13 @@ function normalizeBackendFlight(raw: Record<string, unknown>): FlightRecord {
     eventType: point.eventType ? String(point.eventType) : undefined,
     weather: point.weather as FlightRecord["telemetry"][number]["weather"],
   }));
-  const metrics = (raw.metrics ?? {}) as FlightRecord["metrics"];
+  const backendMetrics = (raw.metrics ?? {}) as Record<string, unknown>;
+  const derivedMetrics = deriveFlightMetrics(telemetry);
+  const metrics: FlightRecord["metrics"] = {
+    ...derivedMetrics,
+    batteryDrainPer100Meters: optionalNumber(backendMetrics.batteryDrainPer100Meters ?? backendMetrics.batteryDrainPer100m) ?? derivedMetrics.batteryDrainPer100Meters,
+    returnMargin: optionalNumber(backendMetrics.returnMargin ?? backendMetrics.returnMarginScore) ?? derivedMetrics.returnMargin,
+  };
   const startedAt = String(raw.startedAt ?? telemetry[0]?.timestamp ?? new Date().toISOString());
   const endedAt = String(raw.endedAt ?? telemetry[telemetry.length - 1]?.timestamp ?? startedAt);
   return {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { BarChart3, Brain, CloudSun, Database, Home, Plane, Settings, Upload } from "lucide-react";
+import { FaGithub, FaLinkedin } from "react-icons/fa6";
 import { DataProvider, useUploadedData } from "@/lib/storage/DataProvider";
 
 const links = [
@@ -63,7 +64,34 @@ function ShellFrame({ children }: { children: React.ReactNode }) {
       </header>
       <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14">{children}</main>
       <footer className="mx-auto max-w-6xl border-t border-black/[0.08] px-4 py-8 text-xs text-[#6e6e73] sm:px-6">
-        AeroStats AI is a personal drone telemetry and machine-learning portfolio project. Weather data provided by Open-Meteo.
+        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
+          <div className="max-w-2xl space-y-2">
+            <p>AeroStats AI is a personal drone telemetry and machine-learning portfolio project. Weather data provided by Open-Meteo.</p>
+            <p>DJI and DJI Fly are trademarks of DJI. AeroStats AI is independent and is not affiliated with or endorsed by DJI.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <a
+              href="https://github.com/immanuelgn/AeroStats-AI"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="View the AeroStats AI repository on GitHub"
+              title="GitHub repository"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/[0.12] text-[#1d1d1f] hover:border-[#0071e3] hover:bg-[#f5f5f7] hover:text-[#0071e3]"
+            >
+              <FaGithub className="h-5 w-5" aria-hidden="true" />
+            </a>
+            <a
+              href="https://www.linkedin.com/in/immanuelgnanaseelan/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="View Immanuel Gnanaseelan on LinkedIn"
+              title="LinkedIn profile"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/[0.12] text-[#0a66c2] hover:border-[#0a66c2] hover:bg-[#0a66c2]/[0.06]"
+            >
+              <FaLinkedin className="h-5 w-5" aria-hidden="true" />
+            </a>
+          </div>
+        </div>
       </footer>
     </div>
   );

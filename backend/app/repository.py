@@ -16,6 +16,7 @@ class Repository:
     def __init__(self, settings: Settings):
         self.settings = settings
         self._client: Client | None = None
+        self._client_error: str | None = None
         self.memory_flights: dict[str, FlightRecord] = {}
         self.memory_model_runs: list[dict[str, Any]] = []
 
@@ -27,8 +28,14 @@ class Repository:
     def client(self) -> Client | None:
         if not self.configured:
             return None
+        if self._client_error:
+            return None
         if self._client is None:
-            self._client = create_client(self.settings.supabase_url, self.settings.supabase_service_role_key)
+            try:
+                self._client = create_client(self.settings.supabase_url, self.settings.supabase_service_role_key)
+            except Exception as exc:
+                self._client_error = _safe_error(exc)
+                return None
         return self._client
 
     def save_raw_file(self, filename: str, content: bytes) -> str | None:
@@ -168,6 +175,9 @@ class Repository:
             "storageBuckets": {},
         }
         if not self.client:
+            if self._client_error:
+                report["error"] = self._client_error
+                return report
             report["error"] = "Supabase environment variables are not configured."
             return report
         for table in [

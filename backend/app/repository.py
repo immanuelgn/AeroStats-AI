@@ -3,6 +3,7 @@ from __future__ import annotations
 import gzip
 import json
 from datetime import datetime, timedelta, timezone
+from hashlib import sha256
 from typing import Any
 from uuid import uuid4
 from supabase import Client, create_client
@@ -105,6 +106,39 @@ class Repository:
         self.memory_uploads.pop(content_sha256, None)
         if self.client:
             self.client.table("flight_uploads").delete().eq("id", upload_id).execute()
+
+    def backfill_upload_hashes(self) -> int:
+        if not self.client:
+            return 0
+        response = self.client.table("flights").select("id,source_filename,raw_file_path,upload_id").is_("upload_id", "null").limit(250).execute()
+        rows = response.data or []
+        paths: dict[str, list[dict[str, Any]]] = {}
+        for row in rows:
+            path = row.get("raw_file_path")
+            if path:
+                paths.setdefault(path, []).append(row)
+        completed = 0
+        for path, linked_rows in paths.items():
+            try:
+                content = self.client.storage.from_(self.settings.supabase_storage_bucket).download(path)
+                digest = sha256(content).hexdigest()
+                existing = self.client.table("flight_uploads").select("id").eq("content_sha256", digest).limit(1).execute()
+                if existing.data:
+                    upload_id = existing.data[0]["id"]
+                else:
+                    registry = self.client.table("flight_uploads").insert({
+                        "content_sha256": digest,
+                        "source_filename": linked_rows[0].get("source_filename") or "legacy upload",
+                        "raw_file_path": path,
+                        "status": "completed",
+                        "completed_at": datetime.now(timezone.utc).isoformat(),
+                    }).execute()
+                    upload_id = registry.data[0]["id"]
+                self.client.table("flights").update({"upload_id": upload_id}).eq("raw_file_path", path).execute()
+                completed += 1
+            except Exception:
+                continue
+        return completed
 
     def save_normalized_file(self, flight: FlightRecord) -> str | None:
         payload = json.dumps([point.model_dump(mode="json") for point in flight.telemetry]).encode("utf-8")

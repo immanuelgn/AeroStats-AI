@@ -31,6 +31,11 @@ app.add_middleware(
 )
 
 
+@app.on_event("startup")
+def backfill_legacy_upload_hashes() -> None:
+    repo.backfill_upload_hashes()
+
+
 async def guard(request: Request, app_settings: Settings = Depends(get_settings)) -> Settings:
     await enforce_rate_limit(request, app_settings)
     return app_settings

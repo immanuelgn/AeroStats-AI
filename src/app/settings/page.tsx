@@ -8,6 +8,7 @@ import { getBackendHealth, getModelStatus, isBackendConfigured, type BackendHeal
 export default function SettingsPage() {
   const { flights, weatherMode, setWeatherMode, clearData, lastParserResult, lastWeatherProviderStatus } = useUploadedData();
   const [showSchema, setShowSchema] = useState(false);
+  const [confirmBrowserReset, setConfirmBrowserReset] = useState(false);
   const [backend, setBackend] = useState<BackendHealth | null>(null);
   const [model, setModel] = useState<BackendModelStatus | null>(null);
   const exportJson = JSON.stringify({ exportedAt: new Date().toISOString(), flights }, null, 2);
@@ -36,12 +37,38 @@ export default function SettingsPage() {
             <Row label="Supabase status" value={backend?.supabaseConfigured ? "Configured" : "Missing backend env or local fallback"} />
             <Row label="Model artifacts" value={model?.modelArtifactStorage ?? "Supabase Storage bucket after backend setup"} />
           </div>
-          <button onClick={clearData} className="mt-5 rounded-full border border-[#1d1d1f]/30 px-5 py-2.5 text-sm font-medium text-[#1d1d1f] hover:bg-[#f5f5f7]">Clear active data</button>
+          <div className="mt-5 rounded-lg bg-[#f5f5f7] p-4">
+            <h3 className="text-sm font-medium text-[#1d1d1f]">Browser display cache</h3>
+            <p className="mt-1 text-xs leading-5 text-[#6e6e73]">
+              Resetting this browser removes its locally displayed flights and preferences only. It does not delete Supabase flight records, model runs, trained artifacts, or ML progress.
+            </p>
+            {confirmBrowserReset ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  onClick={() => {
+                    clearData();
+                    setConfirmBrowserReset(false);
+                  }}
+                  className="rounded-full bg-[#1d1d1f] px-5 py-2.5 text-sm font-medium text-white hover:bg-black"
+                >
+                  Confirm browser reset
+                </button>
+                <button onClick={() => setConfirmBrowserReset(false)} className="rounded-full border border-[#d2d2d7] px-5 py-2.5 text-sm text-[#1d1d1f] hover:bg-white">
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setConfirmBrowserReset(true)} className="mt-4 rounded-full border border-[#1d1d1f]/30 px-5 py-2.5 text-sm font-medium text-[#1d1d1f] hover:bg-white">
+                Reset this browser&apos;s view
+              </button>
+            )}
+          </div>
         </section>
 
         <section className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
           <h2 className="font-semibold text-[#1d1d1f]">Weather mode</h2>
-          <select value={weatherMode} onChange={(event) => setWeatherMode(event.target.value as never)} className="mt-4 w-full rounded-md border border-[#d2d2d7] bg-[#ffffff] px-3 py-2 text-sm text-[#1d1d1f]">
+          <label htmlFor="weather-mode" className="mt-4 block text-xs font-medium uppercase tracking-wide text-[#86868b]">Provider</label>
+          <select id="weather-mode" value={weatherMode} onChange={(event) => setWeatherMode(event.target.value as never)} className="mt-2 w-full rounded-md border border-[#d2d2d7] bg-[#ffffff] px-3 py-2 text-sm text-[#1d1d1f]">
             <option value="disabled">Disabled</option>
             <option value="mock">Mock, development/testing only</option>
             <option value="open-meteo">Open-Meteo</option>

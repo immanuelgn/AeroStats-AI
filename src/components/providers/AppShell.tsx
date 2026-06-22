@@ -31,16 +31,16 @@ function ShellFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-white text-[#1d1d1f]">
       <header className="sticky top-0 z-40 border-b border-black/[0.08] bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-12 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/icon.png" width={28} height={28} alt="" className="h-7 w-7 rounded-md" />
+            <Image src="/icon.png" width={36} height={36} alt="" className="h-9 w-9 rounded-lg" priority />
             <span className="text-sm font-semibold tracking-tight text-[#1d1d1f]">AeroStats AI</span>
           </Link>
           <div className="hidden items-center gap-2 text-xs text-[#6e6e73] lg:flex">
             <Database className="h-3.5 w-3.5" />
             <span>{flights.length ? `${flights.length} flight${flights.length === 1 ? "" : "s"} analyzed` : "Portfolio dataset awaiting first flight"}</span>
             <span className="h-1 w-1 rounded-full bg-[#d2d2d7]" />
-            <span>Weather: {weatherMode}</span>
+            <WeatherStatus mode={weatherMode} />
           </div>
         </div>
         <nav aria-label="Primary navigation" className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 pb-2 sm:px-6">
@@ -94,5 +94,21 @@ function ShellFrame({ children }: { children: React.ReactNode }) {
         </div>
       </footer>
     </div>
+  );
+}
+
+function WeatherStatus({ mode }: { mode: "disabled" | "mock" | "open-meteo" }) {
+  const active = mode === "open-meteo";
+  const testing = mode === "mock";
+  const label = active ? "Open-Meteo active" : testing ? "Testing mode" : "Disabled";
+
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span className="relative flex h-2.5 w-2.5" aria-hidden="true">
+        {active ? <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#34c759] opacity-60 motion-reduce:animate-none" /> : null}
+        <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${active ? "bg-[#34c759]" : testing ? "bg-[#ff9f0a]" : "bg-[#86868b]"}`} />
+      </span>
+      <span>Weather: {label}</span>
+    </span>
   );
 }

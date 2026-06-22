@@ -42,7 +42,7 @@ def train_battery_model(flight_rows: list[dict[str, Any]], segment_rows: list[di
     if len(rows) < 3:
         return _not_available("battery_drain_regressor", "Need at least 3 labeled flight/segment rows with battery data.")
     df = pd.DataFrame(rows)
-    feature_cols = [col for col in FEATURE_COLUMNS if col in df.columns]
+    feature_cols = _available_feature_columns(df, FEATURE_COLUMNS)
     X = df[feature_cols]
     y = df["target"]
     groups = df["flight_id"].fillna("unknown")
@@ -60,10 +60,11 @@ def train_battery_model(flight_rows: list[dict[str, Any]], segment_rows: list[di
         if not best or metrics["mae"] < best["metrics"]["mae"]:
             best = {"name": name, "model": fitted, "metrics": metrics}
     confidence = confidence_report(len(set(groups)), len(rows), float(df.get("feature_completeness_score", pd.Series([40])).mean()), best["metrics"])
-    artifact_path = _save_artifact(repo, "battery", best["model"], feature_cols)
+    train_ranges = _ranges(X)
+    artifact_path = _save_artifact(repo, "battery", best["model"], feature_cols, train_ranges)
     run = _model_run("Battery Drain Regressor", best["name"], "battery_used_percent", len(rows), len(set(groups)), split["strategy"], best["metrics"], _feature_importance(best["model"], feature_cols), confidence, artifact_path)
     repo.save_model_run(run)
-    ARTIFACTS["battery"] = {"model": best["model"], "features": feature_cols, "run": run, "train_ranges": _ranges(X)}
+    ARTIFACTS["battery"] = {"model": best["model"], "features": feature_cols, "run": run, "train_ranges": train_ranges}
     return run
 
 
@@ -72,7 +73,7 @@ def train_risk_model(flight_rows: list[dict[str, Any]], repo: Repository) -> dic
     if len(rows) < 3:
         return _not_available("flight_risk_classifier", "Need at least 3 flights before weakly supervised risk validation is meaningful.")
     df = pd.DataFrame(rows)
-    feature_cols = [col for col in FEATURE_COLUMNS if col in df.columns]
+    feature_cols = _available_feature_columns(df, FEATURE_COLUMNS)
     X = df[feature_cols]
     y = df["weak_risk_label"]
     candidates = {
@@ -96,10 +97,11 @@ def train_risk_model(flight_rows: list[dict[str, Any]], repo: Repository) -> dic
         if not best or metrics["f1_macro"] > best["metrics"]["f1_macro"]:
             best = {"name": name, "model": model, "metrics": metrics}
     confidence = confidence_report(len(rows), len(rows), float(df.get("feature_completeness_score", pd.Series([40])).mean()), best["metrics"], weak_labels=True)
-    artifact_path = _save_artifact(repo, "risk", best["model"], feature_cols)
+    train_ranges = _ranges(X)
+    artifact_path = _save_artifact(repo, "risk", best["model"], feature_cols, train_ranges)
     run = _model_run("Flight Risk Classifier", best["name"], "weak_risk_label", len(rows), len(rows), "holdout weak labels", best["metrics"], _feature_importance(best["model"], feature_cols), confidence, artifact_path, "Weakly supervised until human risk labels exist.")
     repo.save_model_run(run)
-    ARTIFACTS["risk"] = {"model": best["model"], "features": feature_cols, "run": run, "train_ranges": _ranges(X)}
+    ARTIFACTS["risk"] = {"model": best["model"], "features": feature_cols, "run": run, "train_ranges": train_ranges}
     return run
 
 
@@ -108,17 +110,45 @@ def train_anomaly_model(segment_rows: list[dict[str, Any]], repo: Repository, ma
     if len(rows) < 10:
         return _not_available("anomaly_detector", "Need at least 10 segment rows for IsolationForest.")
     df = pd.DataFrame(rows)
-    feature_cols = [col for col in ["segment_duration", "segment_distance", "altitude_delta", "average_speed", "max_speed", "speed_variance", "acceleration_proxy", "battery_delta", "distance_from_home", "gps_satellites", "signal_strength", "wind_speed", "wind_gust"] if col in df.columns]
+    feature_cols = _available_feature_columns(
+        df,
+        ["segment_duration", "segment_distance", "altitude_delta", "average_speed", "max_speed", "speed_variance", "acceleration_proxy", "battery_delta", "distance_from_home", "gps_satellites", "signal_strength", "wind_speed", "wind_gust"],
+    )
     model = Pipeline([("imputer", SimpleImputer(strategy="median")), ("model", IsolationForest(n_estimators=100, contamination="auto", random_state=7))])
     model.fit(df[feature_cols])
     scores = model.named_steps["model"].decision_function(model.named_steps["imputer"].transform(df[feature_cols]))
     metrics = {"training_score_mean": float(np.mean(scores)), "training_score_std": float(np.std(scores)), "algorithm": "IsolationForest"}
     confidence = confidence_report(len(set(df["flight_id"])), len(rows), float(df.get("feature_completeness_score", pd.Series([40])).mean()), metrics)
-    artifact_path = _save_artifact(repo, "anomaly", model, feature_cols)
+    train_ranges = _ranges(df[feature_cols])
+    artifact_path = _save_artifact(repo, "anomaly", model, feature_cols, train_ranges)
     run = _model_run("Anomaly Detector", "isolation_forest", "segment_outlier_score", len(rows), len(set(df["flight_id"])), "unsupervised segment fit", metrics, [], confidence, artifact_path)
     repo.save_model_run(run)
-    ARTIFACTS["anomaly"] = {"model": model, "features": feature_cols, "run": run, "train_ranges": _ranges(df[feature_cols])}
+    ARTIFACTS["anomaly"] = {"model": model, "features": feature_cols, "run": run, "train_ranges": train_ranges}
     return run
+
+
+def restore_model_artifacts(repo: Repository) -> dict[str, str]:
+    restored: dict[str, str] = {}
+    for run in repo.list_model_runs():
+        key = _artifact_key(run)
+        path = run.get("artifact_path")
+        if not key or key in restored or not path:
+            continue
+        try:
+            content = repo.load_model_artifact(path)
+            if not content:
+                continue
+            payload = joblib.load(io.BytesIO(content))
+            ARTIFACTS[key] = {
+                "model": payload["model"],
+                "features": payload["features"],
+                "run": run,
+                "train_ranges": payload.get("train_ranges", {}),
+            }
+            restored[key] = path
+        except Exception:
+            continue
+    return restored
 
 
 def predict_battery(features: dict[str, Any], repo: Repository) -> dict[str, Any]:
@@ -262,10 +292,30 @@ def _fit_regressor(name, model, X, y, split):
     return model, metrics
 
 
-def _save_artifact(repo, key, model, features):
+def _save_artifact(repo, key, model, features, train_ranges):
     payload = io.BytesIO()
-    joblib.dump({"model": model, "features": features, "created_at": datetime.now(timezone.utc).isoformat()}, payload)
+    joblib.dump(
+        {
+            "model": model,
+            "features": features,
+            "train_ranges": train_ranges,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        },
+        payload,
+    )
     return repo.save_model_artifact(key, payload.getvalue())
+
+
+def _artifact_key(run):
+    return {
+        "battery_used_percent": "battery",
+        "weak_risk_label": "risk",
+        "segment_outlier_score": "anomaly",
+    }.get(run.get("target_name"))
+
+
+def _available_feature_columns(df, candidates):
+    return [column for column in candidates if column in df.columns and df[column].notna().any()]
 
 
 def _model_run(name, model_type, target, rows, flights, strategy, metrics, importance, confidence, artifact_path, notes=""):

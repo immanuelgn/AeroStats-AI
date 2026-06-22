@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .analytics import derive_flight_metrics
 from .config import Settings, get_settings
 from .features import build_segment_vectors, extract_flight_feature_vector
-from .ml import ARTIFACTS, build_datasets, detect_anomalies, predict_battery, predict_risk, rank_flight_windows, train_all_models, train_anomaly_model, train_battery_model, train_risk_model
+from .ml import ARTIFACTS, build_datasets, detect_anomalies, predict_battery, predict_risk, rank_flight_windows, restore_model_artifacts, train_all_models, train_anomaly_model, train_battery_model, train_risk_model
 from .models import PredictionRequest, TrainRequest
 from .parsers import parse_dji_flightrecords_zip, parse_flight_json, parse_uploaded_flight_file
 from .repository import DuplicateUploadError, Repository
@@ -32,8 +32,9 @@ app.add_middleware(
 
 
 @app.on_event("startup")
-def backfill_legacy_upload_hashes() -> None:
+def initialize_persistent_state() -> None:
     repo.backfill_upload_hashes()
+    restore_model_artifacts(repo)
 
 
 async def guard(request: Request, app_settings: Settings = Depends(get_settings)) -> Settings:

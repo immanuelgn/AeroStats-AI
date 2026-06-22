@@ -160,6 +160,11 @@ class Repository:
         )
         return path
 
+    def load_model_artifact(self, path: str) -> bytes | None:
+        if not self.client:
+            return None
+        return self.client.storage.from_(self.settings.model_artifact_bucket).download(path)
+
     def persist_flight(self, flight: FlightRecord, raw_file_path: str | None = None, upload_id: str | None = None) -> FlightRecord:
         flight.rawFilePath = raw_file_path
         if not flight.id:

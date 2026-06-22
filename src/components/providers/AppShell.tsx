@@ -12,8 +12,8 @@ const links = [
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/flights", label: "Flights", icon: Plane },
   { href: "/forecast", label: "Forecast", icon: CloudSun },
-  { href: "/upload", label: "Upload", icon: Upload },
   { href: "/model", label: "Model", icon: Brain },
+  { href: "/upload", label: "Upload", icon: Upload },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

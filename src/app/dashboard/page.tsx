@@ -82,8 +82,11 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-sm font-semibold text-[#1d1d1f]">Flight comparison</p>
                   <p className="mt-1 text-sm text-[#6e6e73]">Distance and battery use make the two flights easy to compare.</p>
+                  <div className="mt-3 flex flex-wrap gap-3 text-xs text-[#6e6e73]" aria-label="Flight comparison legend">
+                    <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-[#0071e3]" /> Distance (m)</span>
+                    <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-[#1d1d1f]" /> Battery used (%)</span>
+                  </div>
                 </div>
-                <p className="text-xs text-[#86868b]">Blue: distance (m) · Black: battery used (%)</p>
               </div>
               <div className="mt-5 h-72">
                 <ResponsiveContainer width="100%" height="100%">

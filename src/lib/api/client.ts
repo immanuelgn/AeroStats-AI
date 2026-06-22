@@ -137,6 +137,19 @@ function normalizeBackendFlight(raw: Record<string, unknown>): FlightRecord {
   };
   const startedAt = String(raw.startedAt ?? telemetry[0]?.timestamp ?? new Date().toISOString());
   const endedAt = String(raw.endedAt ?? telemetry[telemetry.length - 1]?.timestamp ?? startedAt);
+  const fallbackFeatureAvailability: FlightRecord["featureAvailability"] = {
+    mapPath: telemetry.length > 0,
+    replay: telemetry.length > 0,
+    batteryAnalytics: telemetry.some((point) => point.batteryPercent !== undefined),
+    altitudeChart: telemetry.some((point) => point.altitudeMeters !== undefined),
+    speedChart: telemetry.some((point) => point.speedMps !== undefined),
+    distanceChart: telemetry.some((point) => point.distanceFromHomeMeters !== undefined),
+    signalStability: telemetry.some((point) => point.gpsSatellites !== undefined || point.signalStrengthPercent !== undefined),
+    weatherJoin: telemetry.length > 0,
+    forecast: telemetry.length > 0,
+    mlBatteryPrediction: telemetry.some((point) => point.batteryPercent !== undefined),
+  };
+  const backendFeatureAvailability = (raw.featureAvailability as Partial<FlightRecord["featureAvailability"]> | undefined) ?? {};
   return {
     id: String(raw.id),
     name: String(raw.name ?? "Imported flight"),
@@ -153,18 +166,7 @@ function normalizeBackendFlight(raw: Record<string, unknown>): FlightRecord {
     metrics,
     events: (raw.events as FlightRecord["events"] | undefined) ?? [],
     tags: (raw.tags as string[] | undefined) ?? ["Backend parsed"],
-    featureAvailability: (raw.featureAvailability as FlightRecord["featureAvailability"] | undefined) ?? {
-      mapPath: telemetry.length > 0,
-      replay: telemetry.length > 0,
-      batteryAnalytics: telemetry.some((point) => point.batteryPercent !== undefined),
-      altitudeChart: telemetry.some((point) => point.altitudeMeters !== undefined),
-      speedChart: telemetry.some((point) => point.speedMps !== undefined),
-      distanceChart: telemetry.some((point) => point.distanceFromHomeMeters !== undefined),
-      signalStability: telemetry.some((point) => point.gpsSatellites !== undefined || point.signalStrengthPercent !== undefined),
-      weatherJoin: telemetry.length > 0,
-      forecast: telemetry.length > 0,
-      mlBatteryPrediction: telemetry.some((point) => point.batteryPercent !== undefined),
-    },
+    featureAvailability: { ...fallbackFeatureAvailability, ...backendFeatureAvailability },
     weatherJoined: telemetry.some((point) => point.weather),
   };
 }

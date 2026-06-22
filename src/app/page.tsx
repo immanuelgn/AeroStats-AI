@@ -1,32 +1,36 @@
 import Link from "next/link";
 import type { ComponentType } from "react";
-import { ArrowRight, BatteryCharging, BrainCircuit, CloudSun, Route } from "lucide-react";
+import { BatteryCharging, BrainCircuit, CloudSun, Route } from "lucide-react";
 import { PipelinePreview } from "@/components/dashboard/PipelinePreview";
 
 export default function Home() {
   return (
-    <div className="space-y-24">
-      <section className="flex min-h-[68vh] flex-col items-center justify-center py-14 text-center">
+    <div className="space-y-20">
+      <section className="relative -mx-4 overflow-hidden px-4 pb-16 pt-20 text-center sm:-mx-6 sm:px-6 lg:rounded-lg">
+        <div className="absolute inset-0 -z-10 bg-[url('/skyline-hero.svg')] bg-cover bg-center" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white/10 via-white/55 to-white" />
+
         <p className="mb-5 text-sm font-semibold text-[#0066cc]">Personal flight intelligence</p>
-        <h1 className="max-w-4xl text-5xl font-semibold tracking-[-0.035em] text-[#1d1d1f] sm:text-7xl">
+        <h1 className="mx-auto max-w-4xl text-5xl font-semibold tracking-[-0.035em] text-[#1d1d1f] sm:text-7xl">
           Every flight becomes a better prediction.
         </h1>
-        <p className="mt-6 max-w-2xl text-lg leading-8 text-[#6e6e73] sm:text-xl">
-          AeroStats AI turns my drone telemetry into replayable flight history, performance analysis, and machine-learning models that improve as my dataset grows.
+        <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-[#424245] sm:text-xl">
+          A polished telemetry workspace for replaying my drone flights, explaining battery behavior, and validating machine-learning models as the dataset grows.
         </p>
+
         <div className="mt-9 flex flex-wrap justify-center gap-3">
-          <Link href="/dashboard" className="rounded-full bg-[#0071e3] px-6 py-3 text-sm font-medium text-white hover:bg-[#0077ed]">
-            View flight dashboard
+          <Link href="/dashboard" className="rounded-full bg-[#0071e3] px-6 py-3 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,113,227,0.25)] hover:bg-[#0077ed]">
+            View dashboard
           </Link>
-          <Link href="/model" className="rounded-full border border-[#0071e3] px-6 py-3 text-sm font-medium text-[#0066cc] hover:bg-[#0071e3]/[0.06]">
-            See the ML pipeline
-          </Link>
-          <Link href="/upload" className="inline-flex items-center gap-1 px-3 py-3 text-sm font-medium text-[#0066cc] hover:underline">
-            Add a flight <ArrowRight className="h-4 w-4" />
+          <Link href="/model" className="rounded-full bg-white/80 px-6 py-3 text-sm font-medium text-[#0066cc] ring-1 ring-[#0071e3]/20 backdrop-blur hover:bg-white">
+            Open model lab
           </Link>
         </div>
-        <div className="mt-14 w-full max-w-4xl">
-          <ProductPreview />
+
+        <div className="mx-auto mt-12 grid max-w-3xl gap-2 rounded-lg border border-black/[0.08] bg-white/70 p-2 text-left shadow-[0_20px_70px_rgba(0,0,0,0.10)] backdrop-blur md:grid-cols-3">
+          <HeroStep label="1" title="Import" body="DJI flight records become normalized telemetry." />
+          <HeroStep label="2" title="Analyze" body="Battery, route, weather, GPS and signal are compared." />
+          <HeroStep label="3" title="Learn" body="Models retrain as more real flights are added." />
         </div>
       </section>
 
@@ -61,41 +65,12 @@ export default function Home() {
   );
 }
 
-function ProductPreview() {
-  const items = [
-    "Replay and compare my complete flight history",
-    "Track prediction accuracy as new flights are added",
-    "Explain battery, risk, anomaly, and weather factors",
-  ];
-
+function HeroStep({ label, title, body }: { label: string; title: string; body: string }) {
   return (
-    <div className="rounded-lg border border-black/[0.08] bg-white p-4 shadow-[0_20px_70px_rgba(0,0,0,0.12)] sm:p-5">
-      <div className="mb-4 flex items-center justify-between">
-        <span className="text-sm font-medium text-[#1d1d1f]">Flight intelligence workspace</span>
-        <span className="rounded-full bg-[#f5f5f7] px-3 py-1 text-xs text-[#6e6e73]">Live pipeline</span>
-      </div>
-      <div className="relative h-80 overflow-hidden rounded-lg bg-[#f5f5f7]">
-        <div
-          className="absolute inset-0 opacity-70"
-          style={{
-            backgroundImage: "linear-gradient(#e5e5ea 1px, transparent 1px), linear-gradient(90deg, #e5e5ea 1px, transparent 1px)",
-            backgroundSize: "34px 34px",
-          }}
-        />
-        <svg viewBox="0 0 500 300" className="absolute inset-0 h-full w-full" aria-label="Static flight path concept preview">
-          <path d="M42 220 C125 120 190 250 268 145 S405 88 462 170" fill="none" stroke="#0071e3" strokeWidth="4" />
-          <circle cx="42" cy="220" r="7" fill="#0071e3" />
-          <circle cx="462" cy="170" r="7" fill="#1d1d1f" />
-        </svg>
-        <div className="absolute bottom-4 left-4 right-4 grid gap-2">
-          {items.map((item) => (
-            <div key={item} className="flex items-center justify-between rounded-md border border-black/[0.08] bg-white/90 px-3 py-2 text-xs text-[#424245] shadow-sm backdrop-blur">
-              <span>{item}</span>
-              <ArrowRight className="h-3.5 w-3.5 text-[#0071e3]" />
-            </div>
-          ))}
-        </div>
-      </div>
+    <div className="rounded-md bg-white/75 p-4">
+      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#0071e3] text-xs font-semibold text-white">{label}</span>
+      <h2 className="mt-4 font-semibold text-[#1d1d1f]">{title}</h2>
+      <p className="mt-1 text-sm leading-6 text-[#6e6e73]">{body}</p>
     </div>
   );
 }

@@ -1,0 +1,55 @@
+<svg width="2400" height="1100" viewBox="0 0 2400 1100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="2400" height="1100" fill="url(#sky)"/>
+  <path d="M0 655C248 587 420 617 622 570C823 523 1007 453 1228 492C1448 530 1604 635 1842 618C2081 601 2233 514 2400 542V1100H0V655Z" fill="url(#haze)"/>
+  <g opacity=".18" fill="#0071E3">
+    <rect x="88" y="672" width="84" height="210" rx="8"/>
+    <rect x="204" y="620" width="114" height="262" rx="10"/>
+    <rect x="360" y="690" width="62" height="192" rx="8"/>
+    <rect x="468" y="575" width="132" height="307" rx="12"/>
+    <rect x="660" y="650" width="88" height="232" rx="10"/>
+    <rect x="804" y="602" width="126" height="280" rx="12"/>
+    <rect x="982" y="532" width="154" height="350" rx="14"/>
+    <rect x="1184" y="622" width="94" height="260" rx="10"/>
+    <rect x="1326" y="568" width="136" height="314" rx="12"/>
+    <rect x="1518" y="648" width="98" height="234" rx="10"/>
+    <rect x="1670" y="586" width="148" height="296" rx="12"/>
+    <rect x="1870" y="642" width="92" height="240" rx="10"/>
+    <rect x="2018" y="598" width="130" height="284" rx="12"/>
+    <rect x="2198" y="668" width="96" height="214" rx="10"/>
+  </g>
+  <g opacity=".32" fill="#1D1D1F">
+    <rect x="100" y="752" width="92" height="210" rx="8"/>
+    <rect x="238" y="714" width="132" height="248" rx="10"/>
+    <rect x="424" y="780" width="70" height="182" rx="8"/>
+    <rect x="552" y="684" width="148" height="278" rx="12"/>
+    <rect x="768" y="744" width="104" height="218" rx="10"/>
+    <rect x="936" y="704" width="152" height="258" rx="12"/>
+    <rect x="1142" y="640" width="172" height="322" rx="14"/>
+    <rect x="1368" y="728" width="112" height="234" rx="10"/>
+    <rect x="1546" y="682" width="156" height="280" rx="12"/>
+    <rect x="1768" y="746" width="114" height="216" rx="10"/>
+    <rect x="1934" y="704" width="164" height="258" rx="12"/>
+    <rect x="2158" y="752" width="112" height="210" rx="10"/>
+  </g>
+  <path d="M0 855C327 812 552 847 835 802C1118 757 1378 720 1674 765C1970 810 2191 836 2400 782V1100H0V855Z" fill="url(#fog)"/>
+  <rect y="825" width="2400" height="275" fill="url(#fade)"/>
+  <defs>
+    <linearGradient id="sky" x1="1200" y1="0" x2="1200" y2="1100" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8FBFF"/>
+      <stop offset=".42" stop-color="#EAF4FF"/>
+      <stop offset=".78" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <linearGradient id="haze" x1="1200" y1="462" x2="1200" y2="1100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C9E2FF" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <linearGradient id="fog" x1="1200" y1="721" x2="1200" y2="1100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="1200" y1="825" x2="1200" y2="1100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset=".72" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+</svg>

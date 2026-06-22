@@ -153,7 +153,11 @@ class Repository:
         if not self.client:
             return None
         path = f"models/{datetime.now(timezone.utc).date()}/{uuid4()}-{_safe_name(name)}.joblib"
-        self.client.storage.from_(self.settings.model_artifact_bucket).upload(path, content)
+        self.client.storage.from_(self.settings.model_artifact_bucket).upload(
+            path,
+            content,
+            {"content-type": "application/octet-stream"},
+        )
         return path
 
     def persist_flight(self, flight: FlightRecord, raw_file_path: str | None = None, upload_id: str | None = None) -> FlightRecord:

@@ -48,18 +48,44 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const results: ParserResult[] = [];
         try {
           for (const file of files) {
-            if (isBackendConfigured()) {
-              const localResult = file.name.toLowerCase().startsWith("djiflightrecord_") ? await parseUploadedFlightFile(file) : undefined;
-              if (localResult && !localResult.flights.length) {
-                results.push(localResult);
-                continue;
+            try {
+              if (isBackendConfigured()) {
+                const localResult = file.name.toLowerCase().startsWith("djiflightrecord_") ? await parseUploadedFlightFile(file) : undefined;
+                if (localResult && !localResult.flights.length) {
+                  results.push(localResult);
+                  continue;
+                }
+                const normalizedTelemetry = localResult?.flights.flatMap((flight) => flight.telemetry);
+                const response = await uploadFlightToBackend(file, normalizedTelemetry);
+                results.push(response.parser);
+              } else {
+                const result = await parseUploadedFlightFile(file);
+                results.push(result);
               }
-              const normalizedTelemetry = localResult?.flights.flatMap((flight) => flight.telemetry);
-              const response = await uploadFlightToBackend(file, normalizedTelemetry);
-              results.push(response.parser);
-            } else {
-              const result = await parseUploadedFlightFile(file);
-              results.push(result);
+            } catch (error) {
+              const message = error instanceof Error ? error.message : "Upload failed.";
+              const duplicate = message.toLowerCase().includes("already been uploaded");
+              results.push({
+                status: "parse failed",
+                detectedFlights: 0,
+                telemetryPoints: 0,
+                hasGps: false,
+                hasBattery: false,
+                hasAltitude: false,
+                hasSpeed: false,
+                hasSignal: false,
+                parserConfidence: 0,
+                missingFields: [],
+                warnings: [{
+                  code: duplicate ? "duplicate-upload" : "upload-failed",
+                  message,
+                  severity: duplicate ? "warning" : "error",
+                }],
+                nextRecommendedAction: duplicate
+                  ? "Choose a different source flight file. This copy was not stored or added to ML training data."
+                  : "Check the backend connection and try the upload again.",
+                flights: [],
+              });
             }
           }
           const importedFlights = results.flatMap((result) => result.flights);

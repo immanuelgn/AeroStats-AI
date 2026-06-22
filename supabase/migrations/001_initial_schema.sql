@@ -3,8 +3,24 @@
 
 create extension if not exists "pgcrypto";
 
+create table if not exists public.flight_uploads (
+  id uuid primary key default gen_random_uuid(),
+  content_sha256 text not null,
+  source_filename text not null,
+  raw_file_path text,
+  status text not null default 'processing',
+  created_at timestamp with time zone not null default now(),
+  completed_at timestamp with time zone,
+  constraint flight_uploads_content_sha256_format
+    check (content_sha256 ~ '^[0-9a-f]{64}$')
+);
+
+create unique index if not exists flight_uploads_content_sha256_uidx
+  on public.flight_uploads(content_sha256);
+
 create table if not exists public.flights (
   id uuid primary key default gen_random_uuid(),
+  upload_id uuid references public.flight_uploads(id) on delete cascade,
   created_at timestamp with time zone default now(),
   name text,
   source_filename text,
@@ -146,10 +162,12 @@ create table if not exists public.weather_cache (
 );
 
 create index if not exists telemetry_points_flight_time_idx on public.telemetry_points(flight_id, timestamp);
+create index if not exists flights_upload_id_idx on public.flights(upload_id);
 create index if not exists feature_vectors_flight_type_idx on public.feature_vectors(flight_id, feature_type);
 create index if not exists predictions_type_created_idx on public.predictions(prediction_type, created_at desc);
 create index if not exists weather_cache_key_idx on public.weather_cache(cache_key);
 
+alter table public.flight_uploads enable row level security;
 alter table public.flights enable row level security;
 alter table public.telemetry_points enable row level security;
 alter table public.flight_metrics enable row level security;

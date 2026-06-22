@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import gzip
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from uuid import uuid4
 from supabase import Client, create_client
@@ -19,6 +19,7 @@ class Repository:
         self._client_error: str | None = None
         self.memory_flights: dict[str, FlightRecord] = {}
         self.memory_model_runs: list[dict[str, Any]] = []
+        self.memory_uploads: dict[str, dict[str, Any]] = {}
 
     @property
     def configured(self) -> bool:
@@ -45,6 +46,66 @@ class Repository:
         self.client.storage.from_(self.settings.supabase_storage_bucket).upload(path, content)
         return path
 
+    def delete_raw_file(self, path: str | None) -> None:
+        if path and self.client:
+            self.client.storage.from_(self.settings.supabase_storage_bucket).remove([path])
+
+    def delete_normalized_file(self, path: str | None) -> None:
+        if path and self.client:
+            self.client.storage.from_(self.settings.supabase_storage_bucket).remove([path])
+
+    def claim_upload(self, content_sha256: str, source_filename: str) -> dict[str, Any]:
+        if not self.client:
+            existing = self.memory_uploads.get(content_sha256)
+            if existing:
+                raise DuplicateUploadError(existing)
+            row = {
+                "id": str(uuid4()),
+                "content_sha256": content_sha256,
+                "source_filename": source_filename,
+                "status": "processing",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            self.memory_uploads[content_sha256] = row
+            return row
+        existing = self.client.table("flight_uploads").select("id,source_filename,status,created_at").eq("content_sha256", content_sha256).limit(1).execute()
+        if existing.data:
+            existing_upload = existing.data[0]
+            if existing_upload.get("status") == "processing" and _is_stale_upload(existing_upload.get("created_at")):
+                self.client.table("flight_uploads").delete().eq("id", existing_upload["id"]).execute()
+            else:
+                raise DuplicateUploadError(existing_upload)
+        try:
+            response = self.client.table("flight_uploads").insert({
+                "content_sha256": content_sha256,
+                "source_filename": source_filename,
+                "status": "processing",
+            }).execute()
+        except Exception as exc:
+            if "23505" in str(exc) or "duplicate key" in str(exc).lower():
+                raced = self.client.table("flight_uploads").select("id,source_filename,status,created_at").eq("content_sha256", content_sha256).limit(1).execute()
+                raise DuplicateUploadError((raced.data or [{}])[0]) from exc
+            raise
+        return response.data[0]
+
+    def complete_upload(self, upload_id: str, raw_file_path: str | None) -> None:
+        if not self.client:
+            for upload in self.memory_uploads.values():
+                if upload.get("id") == upload_id:
+                    upload.update({"status": "completed", "raw_file_path": raw_file_path, "completed_at": datetime.now(timezone.utc).isoformat()})
+                    return
+            return
+        self.client.table("flight_uploads").update({
+            "status": "completed",
+            "raw_file_path": raw_file_path,
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("id", upload_id).execute()
+
+    def release_upload(self, upload_id: str, content_sha256: str) -> None:
+        self.memory_uploads.pop(content_sha256, None)
+        if self.client:
+            self.client.table("flight_uploads").delete().eq("id", upload_id).execute()
+
     def save_normalized_file(self, flight: FlightRecord) -> str | None:
         payload = json.dumps([point.model_dump(mode="json") for point in flight.telemetry]).encode("utf-8")
         compressed = gzip.compress(payload)
@@ -61,7 +122,7 @@ class Repository:
         self.client.storage.from_(self.settings.model_artifact_bucket).upload(path, content)
         return path
 
-    def persist_flight(self, flight: FlightRecord, raw_file_path: str | None = None) -> FlightRecord:
+    def persist_flight(self, flight: FlightRecord, raw_file_path: str | None = None, upload_id: str | None = None) -> FlightRecord:
         flight.rawFilePath = raw_file_path
         if not flight.id:
             flight.id = str(uuid4())
@@ -72,6 +133,7 @@ class Repository:
             return flight
         row = {
             "id": flight.id,
+            "upload_id": upload_id,
             "name": flight.name,
             "source_filename": flight.sourceFilename,
             "source_type": flight.sourceType,
@@ -181,6 +243,7 @@ class Repository:
             report["error"] = "Supabase environment variables are not configured."
             return report
         for table in [
+            "flight_uploads",
             "flights",
             "telemetry_points",
             "flight_metrics",
@@ -266,6 +329,22 @@ class Repository:
 
 def _safe_name(filename: str) -> str:
     return "".join(ch for ch in filename if ch.isalnum() or ch in ("-", "_", "."))[:120]
+
+
+class DuplicateUploadError(Exception):
+    def __init__(self, existing: dict[str, Any]):
+        self.existing = existing
+        super().__init__("This exact source file has already been uploaded.")
+
+
+def _is_stale_upload(created_at: str | None) -> bool:
+    if not created_at:
+        return False
+    try:
+        created = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return datetime.now(timezone.utc) - created > timedelta(minutes=15)
 
 
 def _safe_error(exc: Exception) -> str:

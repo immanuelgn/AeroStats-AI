@@ -60,7 +60,14 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${apiBaseUrl}${path}`, init);
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || `Backend request failed with ${response.status}`);
+    try {
+      const parsed = JSON.parse(text);
+      const detail = parsed?.detail;
+      throw new Error(typeof detail === "string" ? detail : detail?.message ?? `Backend request failed with ${response.status}`);
+    } catch (error) {
+      if (error instanceof SyntaxError) throw new Error(text || `Backend request failed with ${response.status}`);
+      throw error;
+    }
   }
   const payload = await response.json();
   if (payload?.ok === false) throw new Error(payload.error ?? "Backend request failed.");

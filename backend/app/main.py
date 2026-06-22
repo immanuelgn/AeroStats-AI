@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from hashlib import sha256
 from typing import Any
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,7 +10,7 @@ from .features import build_segment_vectors, extract_flight_feature_vector
 from .ml import ARTIFACTS, build_datasets, detect_anomalies, predict_battery, predict_risk, rank_flight_windows, train_all_models, train_anomaly_model, train_battery_model, train_risk_model
 from .models import PredictionRequest, TrainRequest
 from .parsers import parse_dji_flightrecords_zip, parse_flight_json, parse_uploaded_flight_file
-from .repository import Repository
+from .repository import DuplicateUploadError, Repository
 from .security import enforce_rate_limit, validate_file_size, validate_upload_file
 from .weather import get_forecast_windows, get_historical_weather_for_flight, get_weather_provider_status, join_weather_to_telemetry, summarize_weather_impact
 
@@ -82,6 +83,7 @@ async def upload_flight(
     extension = validate_upload_file(file, app_settings)
     content = await file.read()
     validate_file_size(content, app_settings)
+    content_sha256 = sha256(content).hexdigest()
     if normalizedTelemetry:
         normalized_content = normalizedTelemetry.encode("utf-8")
         validate_file_size(normalized_content, app_settings)
@@ -91,12 +93,44 @@ async def upload_flight(
             diagnostic.warnings.append("DJI source decoded locally in the browser; original source file retained privately.")
     else:
         result = parse_uploaded_flight_file(file.filename or "upload", content)
-    raw_path = repo.save_raw_file(file.filename or "upload", content) if result.flights else None
+    if not result.flights:
+        return {"ok": True, "fileType": extension, "parser": result.model_dump(mode="json"), "flights": []}
+    try:
+        upload = repo.claim_upload(content_sha256, file.filename or "upload")
+    except DuplicateUploadError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "code": "duplicate_upload",
+                "message": "This exact flight file has already been uploaded. It was rejected to protect dashboard totals and ML training data.",
+                "originalFilename": exc.existing.get("source_filename"),
+                "uploadedAt": exc.existing.get("created_at"),
+            },
+        ) from exc
+    raw_path = None
     persisted = []
-    for flight in result.flights:
-        persisted.append(repo.persist_flight(flight, raw_path).model_dump(mode="json"))
-    for flight in result.flights:
-        repo.persist_diagnostics(result.diagnostics, flight.id)
+    try:
+        raw_path = repo.save_raw_file(file.filename or "upload", content)
+        for flight in result.flights:
+            persisted.append(repo.persist_flight(flight, raw_path, upload["id"]).model_dump(mode="json"))
+        for flight in result.flights:
+            repo.persist_diagnostics(result.diagnostics, flight.id)
+        repo.complete_upload(upload["id"], raw_path)
+    except Exception:
+        for flight in result.flights:
+            try:
+                repo.delete_normalized_file(flight.normalizedFilePath)
+            except Exception:
+                pass
+        try:
+            repo.delete_raw_file(raw_path)
+        except Exception:
+            pass
+        try:
+            repo.release_upload(upload["id"], content_sha256)
+        except Exception:
+            pass
+        raise
     return {"ok": True, "fileType": extension, "parser": result.model_dump(mode="json"), "flights": persisted}
 
 

@@ -16,6 +16,7 @@ export default function ForecastPage() {
   const [message, setMessage] = useState("");
   const flight = latestFlight(flights);
   const point = flight?.telemetry[0];
+  const hasForecastLocation = Boolean(point?.timestamp && Number.isFinite(point.latitude) && Number.isFinite(point.longitude));
 
   if (backendSyncing && !flights.length) {
     return (
@@ -26,7 +27,7 @@ export default function ForecastPage() {
     );
   }
 
-  if (!flight?.featureAvailability.forecast || !point) {
+  if (!flight || !point || !hasForecastLocation) {
     return <EmptyState title="Forecasting requires an uploaded flight with GPS coordinates and timestamps." body="Upload telemetry with timestamp, latitude, and longitude before ranking flight windows." />;
   }
 

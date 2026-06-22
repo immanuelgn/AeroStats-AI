@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { ComponentType } from "react";
 import { BatteryCharging, BrainCircuit, CloudSun, Route } from "lucide-react";
 import { PipelinePreview } from "@/components/dashboard/PipelinePreview";
@@ -7,8 +8,8 @@ export default function Home() {
   return (
     <div className="space-y-20">
       <section className="relative -mx-4 overflow-hidden px-4 pb-16 pt-20 text-center sm:-mx-6 sm:px-6 lg:rounded-lg">
-        <div className="absolute inset-0 -z-10 bg-[url('/skyline-hero.svg')] bg-cover bg-center" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white/10 via-white/55 to-white" />
+        <Image src="/skyline-hero.svg" alt="" fill priority className="-z-10 object-cover object-bottom" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white/5 via-white/35 to-white/90" />
 
         <p className="mb-5 text-sm font-semibold text-[#0066cc]">Personal flight intelligence</p>
         <h1 className="mx-auto max-w-4xl text-5xl font-semibold tracking-[-0.035em] text-[#1d1d1f] sm:text-7xl">

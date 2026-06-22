@@ -37,11 +37,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         ...parsed,
         flights: parsed.flights.map((flight) => {
           const metrics = deriveFlightMetrics(flight.telemetry);
+          const featureAvailability = deriveFeatureAvailability(flight);
           return {
             ...flight,
             metrics,
             events: generateFlightEvents(flight.telemetry),
-            tags: generateFlightTags({ metrics, featureAvailability: flight.featureAvailability }),
+            tags: generateFlightTags({ metrics, featureAvailability }),
+            featureAvailability,
           };
         }),
       };
@@ -212,8 +214,8 @@ export function useUploadedData() {
 
 function mergeFlights(localFlights: FlightRecord[], backendFlights: FlightRecord[]) {
   const merged = new Map<string, FlightRecord>();
-  for (const flight of backendFlights) merged.set(flight.id, flight);
-  for (const flight of localFlights) {
+  for (const flight of localFlights) merged.set(flight.id, flight);
+  for (const flight of backendFlights) {
     const backendFlight = merged.get(flight.id);
     merged.set(flight.id, flight.telemetry.length || !backendFlight ? flight : backendFlight);
   }
@@ -222,4 +224,21 @@ function mergeFlights(localFlights: FlightRecord[], backendFlights: FlightRecord
     const aTime = new Date(a.metadata.startTime ?? a.importedAt).getTime();
     return bTime - aTime;
   });
+}
+
+function deriveFeatureAvailability(flight: FlightRecord): FlightRecord["featureAvailability"] {
+  const telemetry = flight.telemetry ?? [];
+  return {
+    ...flight.featureAvailability,
+    mapPath: telemetry.length > 0,
+    replay: telemetry.length > 0,
+    batteryAnalytics: telemetry.some((point) => point.batteryPercent !== undefined),
+    altitudeChart: telemetry.some((point) => point.altitudeMeters !== undefined),
+    speedChart: telemetry.some((point) => point.speedMps !== undefined),
+    distanceChart: telemetry.some((point) => point.distanceFromHomeMeters !== undefined),
+    signalStability: telemetry.some((point) => point.gpsSatellites !== undefined || point.signalStrengthPercent !== undefined),
+    weatherJoin: telemetry.length > 0,
+    forecast: telemetry.some((point) => point.timestamp && Number.isFinite(point.latitude) && Number.isFinite(point.longitude)),
+    mlBatteryPrediction: telemetry.some((point) => point.batteryPercent !== undefined),
+  };
 }

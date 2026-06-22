@@ -1,7 +1,7 @@
 <svg width="2400" height="1100" viewBox="0 0 2400 1100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="2400" height="1100" fill="url(#sky)"/>
   <path d="M0 655C248 587 420 617 622 570C823 523 1007 453 1228 492C1448 530 1604 635 1842 618C2081 601 2233 514 2400 542V1100H0V655Z" fill="url(#haze)"/>
-  <g opacity=".18" fill="#0071E3">
+  <g opacity=".38" fill="#0071E3">
     <rect x="88" y="672" width="84" height="210" rx="8"/>
     <rect x="204" y="620" width="114" height="262" rx="10"/>
     <rect x="360" y="690" width="62" height="192" rx="8"/>
@@ -17,7 +17,7 @@
     <rect x="2018" y="598" width="130" height="284" rx="12"/>
     <rect x="2198" y="668" width="96" height="214" rx="10"/>
   </g>
-  <g opacity=".32" fill="#1D1D1F">
+  <g opacity=".55" fill="#1D1D1F">
     <rect x="100" y="752" width="92" height="210" rx="8"/>
     <rect x="238" y="714" width="132" height="248" rx="10"/>
     <rect x="424" y="780" width="70" height="182" rx="8"/>
@@ -32,7 +32,7 @@
     <rect x="2158" y="752" width="112" height="210" rx="10"/>
   </g>
   <path d="M0 855C327 812 552 847 835 802C1118 757 1378 720 1674 765C1970 810 2191 836 2400 782V1100H0V855Z" fill="url(#fog)"/>
-  <rect y="825" width="2400" height="275" fill="url(#fade)"/>
+  <rect y="920" width="2400" height="180" fill="url(#fade)"/>
   <defs>
     <linearGradient id="sky" x1="1200" y1="0" x2="1200" y2="1100" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#F8FBFF"/>
@@ -44,7 +44,7 @@
       <stop offset="1" stop-color="#FFFFFF"/>
     </linearGradient>
     <linearGradient id="fog" x1="1200" y1="721" x2="1200" y2="1100" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF" stop-opacity=".75"/>
+      <stop stop-color="#FFFFFF" stop-opacity=".38"/>
       <stop offset="1" stop-color="#FFFFFF"/>
     </linearGradient>
     <linearGradient id="fade" x1="1200" y1="825" x2="1200" y2="1100" gradientUnits="userSpaceOnUse">

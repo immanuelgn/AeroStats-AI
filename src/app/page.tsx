@@ -8,8 +8,8 @@ export default function Home() {
   return (
     <div className="space-y-20">
       <section className="relative isolate -mx-4 min-h-[640px] overflow-hidden bg-[#edf6ff] px-4 pb-16 pt-20 text-center sm:-mx-6 sm:px-6 lg:rounded-lg">
-        <Image src="/skyline-hero.svg" alt="" fill priority sizes="100vw" className="z-0 object-cover object-bottom" />
-        <div className="absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.28)_42%,rgba(255,255,255,0.94)_100%)]" />
+        <Image src="/skyline-photo.png" alt="" fill priority sizes="100vw" className="z-0 object-cover object-center" />
+        <div className="absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.18)_38%,rgba(255,255,255,0.96)_100%)]" />
 
         <div className="relative z-10">
           <p className="mb-5 text-sm font-semibold text-[#0066cc]">Personal flight intelligence</p>

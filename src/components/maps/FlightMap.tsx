@@ -7,23 +7,33 @@ import type { FlightEvent, TelemetryPoint } from "@/types";
 
 const droneIcon = L.divIcon({
   className: "",
-  html: '<div style="width:18px;height:18px;border-radius:50%;background:#1d1d1f;border:4px solid #0071e3;box-shadow:0 0 0 6px rgba(152,181,138,.18)"></div>',
+  html: '<div style="width:18px;height:18px;border-radius:50%;background:#1d1d1f;border:4px solid #0071e3;box-shadow:0 0 0 6px rgba(0,113,227,.18)"></div>',
   iconSize: [18, 18],
   iconAnchor: [9, 9],
 });
 
-export function FlightMap({ telemetry, currentIndex, events }: { telemetry: TelemetryPoint[]; currentIndex: number; events: FlightEvent[] }) {
+export function FlightMap({
+  telemetry,
+  currentIndex,
+  events,
+  heightClassName = "h-[520px]",
+}: {
+  telemetry: TelemetryPoint[];
+  currentIndex: number;
+  events: FlightEvent[];
+  heightClassName?: string;
+}) {
   const points = telemetry.map((point) => [point.latitude, point.longitude] as [number, number]);
   const current = telemetry[Math.min(currentIndex, telemetry.length - 1)] ?? telemetry[0];
   const center = points[0] ?? [43.6532, -79.3832];
 
   if (!points.length) {
-    return <div className="flex h-[520px] items-center justify-center rounded-lg border border-[#d2d2d7] bg-[#ffffff] text-sm text-[#6e6e73]">Map path requires latitude and longitude.</div>;
+    return <div className={`flex ${heightClassName} items-center justify-center rounded-lg border border-[#d2d2d7] bg-[#ffffff] text-sm text-[#6e6e73]`}>Map path requires latitude and longitude.</div>;
   }
 
   return (
     <div className="overflow-hidden rounded-lg border border-[#d2d2d7] bg-[#ffffff]">
-      <MapContainer center={center} zoom={15} scrollWheelZoom className="h-[520px] w-full">
+      <MapContainer center={center} zoom={15} scrollWheelZoom className={`${heightClassName} w-full`}>
         <TileLayer attribution="OpenStreetMap contributors" url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <FitBounds points={points} />
         <Polyline positions={points} pathOptions={{ color: "#0071e3", weight: 4, opacity: 0.9 }} />

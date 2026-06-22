@@ -45,12 +45,12 @@ export default function ModelPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-semibold text-[#f5f3ec]">ML insights</h1>
-          <p className="mt-2 text-sm text-[#a9b0a6]">Model estimates appear after valid telemetry is imported.</p>
+          <h1 className="text-3xl font-semibold text-[#1d1d1f]">ML insights</h1>
+          <p className="mt-2 text-sm text-[#6e6e73]">This page will document how prediction quality changes as my flight history grows.</p>
         </div>
         <PipelinePreview />
         <BackendModelPanel status={backendStatus} trainingState={trainingState} onTrain={train} disabled={!isBackendConfigured()} />
-        <EmptyState title="Model estimates appear after valid telemetry is imported." body="Before upload, this page explains the ML-ready architecture without showing fake trained metrics." />
+        <EmptyState title="The ML pipeline is ready for my flight data." body="The app deliberately shows no fabricated accuracy. Training, validation metrics, and confidence will appear after enough real telemetry is available." />
         <Architecture />
       </div>
     );
@@ -67,8 +67,8 @@ export default function ModelPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-[#f5f3ec]">ML insights</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#a9b0a6]">
+        <h1 className="text-3xl font-semibold text-[#1d1d1f]">ML insights</h1>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6e6e73]">
           Backend ML uses FastAPI, pandas, NumPy, and scikit-learn when configured. Local fallback estimates are capped at Low/Medium confidence unless backend validation supports more.
         </p>
       </div>
@@ -80,30 +80,30 @@ export default function ModelPage() {
         <ModelCard title="Best Flight Window Ranker" output={flights.some((item) => item.weatherJoined) ? "Weather-adjusted ranking available" : "Requires weather or forecast data"} confidence={flights.some((item) => item.weatherJoined) ? "medium" : "low"} body="Ranks windows using wind, gusts, precipitation, temperature, visibility, and uploaded flight profile." missing={flights.some((item) => item.weatherJoined) ? [] : ["weatherWindows"]} />
       </div>
 
-      <section className="rounded-lg border border-white/10 bg-[#171a18] p-5">
-        <h2 className="font-semibold text-[#f5f3ec]">Feature vector used</h2>
-        <pre className="mt-4 overflow-auto rounded-md border border-[#303831] bg-[#101310] p-4 text-xs leading-6 text-[#c9cec4]">{JSON.stringify({ latestFlight: flight.name, features, userFlightProfile: profile }, null, 2)}</pre>
+      <section className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
+        <h2 className="font-semibold text-[#1d1d1f]">Feature vector used</h2>
+        <pre className="mt-4 overflow-auto rounded-md border border-[#d2d2d7] bg-[#f5f5f7] p-4 text-xs leading-6 text-[#424245]">{JSON.stringify({ latestFlight: flight.name, features, userFlightProfile: profile }, null, 2)}</pre>
       </section>
 
       {importance.length ? (
         <ChartCard title="Feature importance">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={importance}>
-              <CartesianGrid stroke="#303831" strokeDasharray="3 3" />
-              <XAxis dataKey="feature" stroke="#7f887d" interval={0} angle={-18} height={80} textAnchor="end" />
-              <YAxis stroke="#7f887d" />
-              <Tooltip contentStyle={{ background: "#111411", border: "1px solid #303831", color: "#f5f3ec" }} />
-              <Bar dataKey="value" fill="#98b58a" radius={[4, 4, 0, 0]} />
+              <CartesianGrid stroke="#d2d2d7" strokeDasharray="3 3" />
+              <XAxis dataKey="feature" stroke="#86868b" interval={0} angle={-18} height={80} textAnchor="end" />
+              <YAxis stroke="#86868b" />
+              <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #d2d2d7", color: "#1d1d1f" }} />
+              <Bar dataKey="value" fill="#0071e3" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
       ) : null}
 
-      <section className="rounded-lg border border-white/10 bg-[#171a18] p-5">
-        <h2 className="font-semibold text-[#f5f3ec]">{explanation.title}</h2>
-        <p className="mt-2 text-sm text-[#a9b0a6]">Output: {explanation.output}. Confidence: {explanation.confidence}.</p>
+      <section className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
+        <h2 className="font-semibold text-[#1d1d1f]">{explanation.title}</h2>
+        <p className="mt-2 text-sm text-[#6e6e73]">Output: {explanation.output}. Confidence: {explanation.confidence}.</p>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {explanation.factors.map((factor) => <p key={factor} className="rounded-md border border-[#303831] bg-[#111411] p-3 text-sm text-[#a9b0a6]">{factor}</p>)}
+          {explanation.factors.map((factor) => <p key={factor} className="rounded-md border border-[#d2d2d7] bg-[#ffffff] p-3 text-sm text-[#6e6e73]">{factor}</p>)}
         </div>
       </section>
 
@@ -114,29 +114,29 @@ export default function ModelPage() {
 
 function ModelCard({ title, output, confidence, body, missing }: { title: string; output: string; confidence: string; body: string; missing: string[] }) {
   return (
-    <section className="rounded-lg border border-white/10 bg-[#171a18] p-5">
+    <section className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-semibold text-[#f5f3ec]">{title}</h2>
-        <span className="rounded-md border border-[#303831] px-2 py-1 text-xs text-[#a9b0a6]">{confidence} confidence</span>
+        <h2 className="font-semibold text-[#1d1d1f]">{title}</h2>
+        <span className="rounded-md border border-[#d2d2d7] px-2 py-1 text-xs text-[#6e6e73]">{confidence} confidence</span>
       </div>
-      <p className="mt-4 text-2xl font-semibold text-[#f5f3ec]">{output}</p>
-      <p className="mt-2 text-sm leading-6 text-[#a9b0a6]">{body}</p>
-      {missing.length ? <p className="mt-3 text-sm text-[#d5a85f]">Missing fields reducing confidence: {missing.join(", ")}</p> : null}
+      <p className="mt-4 text-2xl font-semibold text-[#1d1d1f]">{output}</p>
+      <p className="mt-2 text-sm leading-6 text-[#6e6e73]">{body}</p>
+      {missing.length ? <p className="mt-3 text-sm text-[#0071e3]">Missing fields reducing confidence: {missing.join(", ")}</p> : null}
     </section>
   );
 }
 
 function Architecture() {
   return (
-    <section className="rounded-lg border border-white/10 bg-[#171a18] p-5">
-      <h2 className="font-semibold text-[#f5f3ec]">Hybrid MVP approach</h2>
+    <section className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
+      <h2 className="font-semibold text-[#1d1d1f]">Validation strategy</h2>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         {[
           "FastAPI backend trains scikit-learn models from uploaded telemetry and weather-joined features.",
           "Segment-level rows increase sample size while grouped validation avoids same-flight leakage.",
           "Risk classification is weakly supervised until true human labels exist.",
           "High confidence is blocked unless validation, feature completeness, flight count, and uncertainty support it.",
-        ].map((item) => <p key={item} className="rounded-md border border-[#303831] bg-[#111411] p-3 text-sm text-[#a9b0a6]">{item}</p>)}
+        ].map((item) => <p key={item} className="rounded-md border border-[#d2d2d7] bg-[#ffffff] p-3 text-sm text-[#6e6e73]">{item}</p>)}
       </div>
     </section>
   );
@@ -154,15 +154,15 @@ function BackendModelPanel({
   disabled: boolean;
 }) {
   return (
-    <section className="rounded-lg border border-white/10 bg-[#171a18] p-5">
+    <section className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="font-semibold text-[#f5f3ec]">Backend ML status</h2>
-          <p className="mt-1 text-sm text-[#a9b0a6]">
+          <h2 className="font-semibold text-[#1d1d1f]">Backend ML status</h2>
+          <p className="mt-1 text-sm text-[#6e6e73]">
             {disabled ? "Set NEXT_PUBLIC_API_BASE_URL to enable FastAPI training." : status ? `Backend ${status.backend}. Artifacts: ${status.modelArtifactStorage}.` : "Backend waking up..."}
           </p>
         </div>
-        <button disabled={disabled} onClick={onTrain} className="rounded-md bg-[#f5f3ec] px-4 py-2 text-sm font-medium text-[#111411] disabled:cursor-not-allowed disabled:opacity-50">
+        <button disabled={disabled} onClick={onTrain} className="rounded-full bg-[#0071e3] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#0077ed] disabled:cursor-not-allowed disabled:opacity-50">
           Train / Retrain models
         </button>
       </div>
@@ -174,8 +174,8 @@ function BackendModelPanel({
           <Metric label="Confidence rule" value="Conservative" />
         </div>
       ) : null}
-      {trainingState ? <p className="mt-4 text-sm text-[#d5a85f]">{trainingState}</p> : null}
-      <p className="mt-4 text-xs leading-5 text-[#7f887d]">
+      {trainingState ? <p className="mt-4 text-sm text-[#0071e3]">{trainingState}</p> : null}
+      <p className="mt-4 text-xs leading-5 text-[#86868b]">
         Upload at least 5-10 flights with battery, speed, altitude, GPS/signal, and joined weather for stronger confidence.
       </p>
     </section>
@@ -184,9 +184,9 @@ function BackendModelPanel({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-[#303831] bg-[#111411] p-3">
-      <p className="text-xs text-[#7f887d]">{label}</p>
-      <p className="mt-1 text-sm text-[#f5f3ec]">{value}</p>
+    <div className="rounded-md border border-[#d2d2d7] bg-[#ffffff] p-3">
+      <p className="text-xs text-[#86868b]">{label}</p>
+      <p className="mt-1 text-sm text-[#1d1d1f]">{value}</p>
     </div>
   );
 }

@@ -18,36 +18,36 @@ export function TelemetryCharts({ flight }: { flight: FlightRecord }) {
     <div className="grid gap-4 lg:grid-cols-2">
       {flight.featureAvailability.batteryAnalytics ? (
         <ChartCard title="Battery over time">
-          <MiniArea data={data} dataKey="battery" color="#98b58a" />
+          <MiniArea data={data} dataKey="battery" color="#0071e3" />
         </ChartCard>
       ) : null}
       {flight.featureAvailability.altitudeChart || flight.featureAvailability.speedChart ? (
         <ChartCard title="Altitude and speed">
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={data}>
-              <CartesianGrid stroke="#303831" strokeDasharray="3 3" />
-              <XAxis dataKey="time" stroke="#7f887d" minTickGap={24} />
-              <YAxis stroke="#7f887d" />
-              <Tooltip contentStyle={{ background: "#111411", border: "1px solid #303831", color: "#f5f3ec" }} />
-              {flight.featureAvailability.altitudeChart ? <Line type="monotone" dataKey="altitude" stroke="#d5a85f" dot={false} strokeWidth={2} /> : null}
-              {flight.featureAvailability.speedChart ? <Line type="monotone" dataKey="speed" stroke="#98b58a" dot={false} strokeWidth={2} /> : null}
+              <CartesianGrid stroke="#d2d2d7" strokeDasharray="3 3" />
+              <XAxis dataKey="time" stroke="#86868b" minTickGap={24} />
+              <YAxis stroke="#86868b" />
+              <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #d2d2d7", color: "#1d1d1f" }} />
+              {flight.featureAvailability.altitudeChart ? <Line type="monotone" dataKey="altitude" stroke="#0071e3" dot={false} strokeWidth={2} /> : null}
+              {flight.featureAvailability.speedChart ? <Line type="monotone" dataKey="speed" stroke="#0071e3" dot={false} strokeWidth={2} /> : null}
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>
       ) : null}
       {flight.featureAvailability.distanceChart ? (
         <ChartCard title="Distance from home">
-          <MiniArea data={data} dataKey="distance" color="#d5a85f" />
+          <MiniArea data={data} dataKey="distance" color="#0071e3" />
         </ChartCard>
       ) : null}
       <ChartCard title="Event distribution" note="Derived from telemetry">
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={flight.events.map((event) => ({ label: event.label, index: event.telemetryIndex }))}>
-            <CartesianGrid stroke="#303831" strokeDasharray="3 3" />
-            <XAxis dataKey="label" stroke="#7f887d" interval={0} angle={-20} height={70} textAnchor="end" />
-            <YAxis stroke="#7f887d" />
-            <Tooltip contentStyle={{ background: "#111411", border: "1px solid #303831", color: "#f5f3ec" }} />
-            <Bar dataKey="index" fill="#98b58a" radius={[4, 4, 0, 0]} />
+            <CartesianGrid stroke="#d2d2d7" strokeDasharray="3 3" />
+            <XAxis dataKey="label" stroke="#86868b" interval={0} angle={-20} height={70} textAnchor="end" />
+            <YAxis stroke="#86868b" />
+            <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #d2d2d7", color: "#1d1d1f" }} />
+            <Bar dataKey="index" fill="#0071e3" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
@@ -59,10 +59,10 @@ function MiniArea({ data, dataKey, color }: { data: Record<string, unknown>[]; d
   return (
     <ResponsiveContainer width="100%" height={260}>
       <AreaChart data={data}>
-        <CartesianGrid stroke="#303831" strokeDasharray="3 3" />
-        <XAxis dataKey="time" stroke="#7f887d" minTickGap={24} />
-        <YAxis stroke="#7f887d" />
-        <Tooltip contentStyle={{ background: "#111411", border: "1px solid #303831", color: "#f5f3ec" }} />
+        <CartesianGrid stroke="#d2d2d7" strokeDasharray="3 3" />
+        <XAxis dataKey="time" stroke="#86868b" minTickGap={24} />
+        <YAxis stroke="#86868b" />
+        <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #d2d2d7", color: "#1d1d1f" }} />
         <Area type="monotone" dataKey={dataKey} stroke={color} fill={color} fillOpacity={0.18} strokeWidth={2} />
       </AreaChart>
     </ResponsiveContainer>

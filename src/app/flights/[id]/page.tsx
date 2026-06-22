@@ -45,7 +45,7 @@ export default function FlightDetailPage() {
     return <EmptyState title="Flight replay requires an imported flight." body="Upload telemetry before opening the cinematic replay page." />;
   }
   if (!flight) {
-    return <EmptyState title="Flight not found" body="The selected flight is not in localStorage. Return to the flight library." action="View Flights" href="/flights" />;
+    return <EmptyState title="Flight not found" body="The selected flight is not available in the active dataset. Return to the flight library." action="View flights" href="/flights" />;
   }
 
   const features = buildFeaturesFromFlight(flight);
@@ -81,13 +81,13 @@ export default function FlightDetailPage() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
         <div>
-          <Link href="/flights" className="text-sm text-[#c8d8bd]">Back to flights</Link>
-          <h1 className="mt-2 text-3xl font-semibold text-[#f5f3ec]">{flight.name}</h1>
-          <p className="mt-2 text-sm text-[#a9b0a6]">Replay, event markers, telemetry, charts, and baseline insights are generated from this uploaded flight only.</p>
+          <Link href="/flights" className="text-sm text-[#0066cc]">Back to flights</Link>
+          <h1 className="mt-2 text-3xl font-semibold text-[#1d1d1f]">{flight.name}</h1>
+          <p className="mt-2 text-sm text-[#6e6e73]">Replay, event markers, telemetry, charts, and baseline insights are generated from this uploaded flight only.</p>
         </div>
-        <button onClick={() => void joinWeather()} className="rounded-md border border-[#98b58a]/40 px-4 py-2 text-sm text-[#dfe8d7] hover:bg-[#98b58a]/10">Join weather</button>
+        <button onClick={() => void joinWeather()} className="rounded-full border border-[#0071e3] px-5 py-2.5 text-sm font-medium text-[#0066cc] hover:bg-[#0071e3]/10">Join weather</button>
       </div>
-      {weatherMessage ? <p className="rounded-lg border border-[#303831] bg-[#151915] p-3 text-sm text-[#a9b0a6]">{weatherMessage}</p> : null}
+      {weatherMessage ? <p className="rounded-lg border border-[#d2d2d7] bg-[#f5f5f7] p-3 text-sm text-[#6e6e73]">{weatherMessage}</p> : null}
 
       <div className="grid gap-4 md:grid-cols-4">
         <StatCard label="Duration" value={formatDuration(flight.metrics.durationSeconds)} />
@@ -123,11 +123,11 @@ export default function FlightDetailPage() {
         <Insight title="Anomaly detector" body={anomalies.length ? `${anomalies.length} telemetry anomalies detected for review.` : "No obvious anomalies detected from available telemetry fields."} />
       </section>
 
-      <section className="rounded-lg border border-white/10 bg-[#171a18] p-5">
-        <h2 className="font-semibold text-[#f5f3ec]">Flight insights</h2>
+      <section className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
+        <h2 className="font-semibold text-[#1d1d1f]">Flight insights</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {insights.map((insight) => (
-            <div key={insight} className="rounded-md border border-[#303831] bg-[#111411] p-3 text-sm leading-6 text-[#a9b0a6]">{insight}</div>
+            <div key={insight} className="rounded-md border border-[#d2d2d7] bg-[#ffffff] p-3 text-sm leading-6 text-[#6e6e73]">{insight}</div>
           ))}
         </div>
       </section>
@@ -137,9 +137,9 @@ export default function FlightDetailPage() {
 
 function Insight({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-[#171a18] p-5">
-      <h3 className="font-semibold text-[#f5f3ec]">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-[#a9b0a6]">{body}</p>
+    <div className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
+      <h3 className="font-semibold text-[#1d1d1f]">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-[#6e6e73]">{body}</p>
     </div>
   );
 }

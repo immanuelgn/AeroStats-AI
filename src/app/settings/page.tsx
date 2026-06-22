@@ -21,13 +21,13 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-[#f5f3ec]">Settings and diagnostics</h1>
-        <p className="mt-2 text-sm text-[#a9b0a6]">Local MVP controls for data, parser diagnostics, weather mode, units, and export.</p>
+        <h1 className="text-3xl font-semibold text-[#1d1d1f]">Settings and diagnostics</h1>
+        <p className="mt-2 text-sm text-[#6e6e73]">Data connection, parser diagnostics, weather mode, units, and portfolio export controls.</p>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-lg border border-white/10 bg-[#171a18] p-5">
-          <h2 className="font-semibold text-[#f5f3ec]">Data source status</h2>
-          <div className="mt-4 space-y-3 text-sm text-[#a9b0a6]">
+        <section className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
+          <h2 className="font-semibold text-[#1d1d1f]">Data source status</h2>
+          <div className="mt-4 space-y-3 text-sm text-[#6e6e73]">
             <Row label="Status" value={flights.length ? "Uploaded data active" : "Empty"} />
             <Row label="Stored flights" value={String(flights.length)} />
             <Row label="Storage location" value={backend?.supabaseConfigured ? "Supabase Storage/Postgres via backend" : "localStorage fallback"} />
@@ -36,35 +36,35 @@ export default function SettingsPage() {
             <Row label="Supabase status" value={backend?.supabaseConfigured ? "Configured" : "Missing backend env or local fallback"} />
             <Row label="Model artifacts" value={model?.modelArtifactStorage ?? "Supabase Storage bucket after backend setup"} />
           </div>
-          <button onClick={clearData} className="mt-5 rounded-md border border-[#e07b67]/40 px-4 py-2 text-sm text-[#f0a190] hover:bg-[#e07b67]/10">Clear uploaded data</button>
+          <button onClick={clearData} className="mt-5 rounded-full border border-[#1d1d1f]/30 px-5 py-2.5 text-sm font-medium text-[#1d1d1f] hover:bg-[#f5f5f7]">Clear active data</button>
         </section>
 
-        <section className="rounded-lg border border-white/10 bg-[#171a18] p-5">
-          <h2 className="font-semibold text-[#f5f3ec]">Weather mode</h2>
-          <select value={weatherMode} onChange={(event) => setWeatherMode(event.target.value as never)} className="mt-4 w-full rounded-md border border-[#303831] bg-[#111411] px-3 py-2 text-sm text-[#f5f3ec]">
+        <section className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
+          <h2 className="font-semibold text-[#1d1d1f]">Weather mode</h2>
+          <select value={weatherMode} onChange={(event) => setWeatherMode(event.target.value as never)} className="mt-4 w-full rounded-md border border-[#d2d2d7] bg-[#ffffff] px-3 py-2 text-sm text-[#1d1d1f]">
             <option value="disabled">Disabled</option>
             <option value="mock">Mock, development/testing only</option>
             <option value="open-meteo">Open-Meteo</option>
           </select>
-          <p className="mt-3 text-sm leading-6 text-[#a9b0a6]">{lastWeatherProviderStatus?.message ?? "Weather is disabled by default and is not called automatically before valid GPS/timestamp data exists."}</p>
+          <p className="mt-3 text-sm leading-6 text-[#6e6e73]">{lastWeatherProviderStatus?.message ?? "Weather is disabled by default and is not called automatically before valid GPS/timestamp data exists."}</p>
         </section>
       </div>
 
       <ParserStatusCard result={lastParserResult} />
 
-      <section className="rounded-lg border border-white/10 bg-[#171a18] p-5">
+      <section className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div>
-            <h2 className="font-semibold text-[#f5f3ec]">Technical schema details</h2>
-            <p className="mt-1 text-sm text-[#a9b0a6]">Internal CSV/JSON schema and normalized export controls.</p>
+            <h2 className="font-semibold text-[#1d1d1f]">Technical schema details</h2>
+            <p className="mt-1 text-sm text-[#6e6e73]">Internal CSV/JSON schema and normalized export controls.</p>
           </div>
-          <button onClick={() => setShowSchema((value) => !value)} className="rounded-md border border-[#303831] px-4 py-2 text-sm text-[#f5f3ec] hover:bg-white/[0.06]">{showSchema ? "Hide" : "Show"} schema</button>
+          <button onClick={() => setShowSchema((value) => !value)} className="rounded-full border border-[#d2d2d7] px-5 py-2.5 text-sm text-[#1d1d1f] hover:bg-[#f5f5f7]">{showSchema ? "Hide" : "Show"} schema</button>
         </div>
         {showSchema ? (
-          <pre className="mt-4 overflow-auto rounded-md border border-[#303831] bg-[#101310] p-4 text-xs leading-6 text-[#c9cec4]">{schemaText}</pre>
+          <pre className="mt-4 overflow-auto rounded-md border border-[#d2d2d7] bg-[#f5f5f7] p-4 text-xs leading-6 text-[#424245]">{schemaText}</pre>
         ) : null}
         {flights.length ? (
-          <a download="aerostats-normalized-data.json" href={`data:application/json;charset=utf-8,${encodeURIComponent(exportJson)}`} className="mt-4 inline-flex rounded-md bg-[#f5f3ec] px-4 py-2 text-sm font-medium text-[#111411] hover:bg-[#dfe8d7]">
+          <a download="aerostats-normalized-data.json" href={`data:application/json;charset=utf-8,${encodeURIComponent(exportJson)}`} className="mt-4 inline-flex rounded-full bg-[#0071e3] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#0077ed]">
             Export normalized data as JSON
           </a>
         ) : null}
@@ -75,9 +75,9 @@ export default function SettingsPage() {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-[#303831] pb-2">
-      <span className="text-[#7f887d]">{label}</span>
-      <span className="text-right text-[#f5f3ec]">{value}</span>
+    <div className="flex justify-between gap-4 border-b border-[#d2d2d7] pb-2">
+      <span className="text-[#86868b]">{label}</span>
+      <span className="text-right text-[#1d1d1f]">{value}</span>
     </div>
   );
 }

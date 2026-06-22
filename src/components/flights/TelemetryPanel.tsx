@@ -15,13 +15,13 @@ export function TelemetryPanel({ point, event }: { point?: TelemetryPoint; event
     ["Event", event?.label ?? point?.eventType ?? "None"],
   ];
   return (
-    <div className="rounded-lg border border-white/10 bg-[#171a18] p-5">
-      <h3 className="font-semibold text-[#f5f3ec]">Synced telemetry</h3>
-      <div className="mt-4 divide-y divide-[#303831]">
+    <div className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
+      <h3 className="font-semibold text-[#1d1d1f]">Synced telemetry</h3>
+      <div className="mt-4 divide-y divide-[#d2d2d7]">
         {rows.map(([label, value]) => (
           <div key={label} className="flex items-center justify-between gap-4 py-2 text-sm">
-            <span className="text-[#7f887d]">{label}</span>
-            <span className="text-right font-mono text-[#f5f3ec]">{value}</span>
+            <span className="text-[#86868b]">{label}</span>
+            <span className="text-right font-mono text-[#1d1d1f]">{value}</span>
           </div>
         ))}
       </div>

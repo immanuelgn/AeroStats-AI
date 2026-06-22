@@ -11,15 +11,15 @@ export default function UploadPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-[#f5f3ec]">Upload/import</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#a9b0a6]">
-          Upload an AeroStats AI CSV or JSON telemetry file now. When the backend is configured, files are validated, parsed, stored in Supabase Storage, summarized in Postgres, and prepared for feature extraction.
+        <h1 className="text-3xl font-semibold text-[#1d1d1f]">Add a flight</h1>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6e6e73]">
+          Add one of my flight logs to the portfolio dataset. Supported files are validated, stored privately in Supabase, normalized for replay, and prepared for feature extraction and model training.
         </p>
       </div>
       <UploadDropzone onResults={(results) => setLatestResult(results[results.length - 1])} />
       <ParserStatusCard result={latestResult} />
       <PipelinePreview />
-      <div className="rounded-lg border border-[#d5a85f]/30 bg-[#d5a85f]/10 p-4 text-sm leading-6 text-[#e2c383]">
+      <div className="rounded-lg border border-[#0071e3]/30 bg-[#0071e3]/10 p-4 text-sm leading-6 text-[#0066cc]">
         AeroStats AI provides estimates based on uploaded telemetry and weather data. Always follow local drone regulations, check official airspace tools, maintain visual line of sight, and use your own judgment before flying.
       </div>
     </div>

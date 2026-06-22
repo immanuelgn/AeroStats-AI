@@ -5,12 +5,12 @@ import { RiskBadge } from "@/components/flights/RiskBadge";
 
 export function FlightCard({ flight }: { flight: FlightRecord }) {
   return (
-    <Link href={`/flights/${flight.id}`} className="block rounded-lg border border-white/10 bg-[#171a18] p-5 hover:border-[#98b58a]/40 hover:bg-[#1b201c]">
+    <Link href={`/flights/${flight.id}`} className="block rounded-lg border border-black/[0.08] bg-[#ffffff] p-5 hover:border-[#0071e3]/40 hover:bg-[#f5f5f7]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="font-semibold text-[#f5f3ec]">{flight.name}</p>
-          <p className="mt-1 text-sm text-[#a9b0a6]">{flight.metadata.startTime ? new Date(flight.metadata.startTime).toLocaleString() : "Date unavailable"}</p>
-          <p className="mt-1 text-xs text-[#7f887d]">{flight.metadata.locationLabel ?? "Location not detected"}</p>
+          <p className="font-semibold text-[#1d1d1f]">{flight.name}</p>
+          <p className="mt-1 text-sm text-[#6e6e73]">{flight.metadata.startTime ? new Date(flight.metadata.startTime).toLocaleString() : "Date unavailable"}</p>
+          <p className="mt-1 text-xs text-[#86868b]">{flight.metadata.locationLabel ?? "Location not detected"}</p>
         </div>
         <RiskBadge score={flight.metrics.riskScore} />
       </div>
@@ -22,7 +22,7 @@ export function FlightCard({ flight }: { flight: FlightRecord }) {
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         {flight.tags.map((tag) => (
-          <span key={tag} className="rounded-md border border-[#303831] px-2 py-1 text-xs text-[#a9b0a6]">
+          <span key={tag} className="rounded-md border border-[#d2d2d7] px-2 py-1 text-xs text-[#6e6e73]">
             {tag}
           </span>
         ))}
@@ -34,8 +34,8 @@ export function FlightCard({ flight }: { flight: FlightRecord }) {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-[#7f887d]">{label}</p>
-      <p className="mt-1 text-[#f5f3ec]">{value}</p>
+      <p className="text-xs text-[#86868b]">{label}</p>
+      <p className="mt-1 text-[#1d1d1f]">{value}</p>
     </div>
   );
 }

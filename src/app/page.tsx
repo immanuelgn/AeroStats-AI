@@ -6,10 +6,10 @@ import { PipelinePreview } from "@/components/dashboard/PipelinePreview";
 
 export default function Home() {
   return (
-    <div className="space-y-20">
-      <section className="relative isolate -mx-4 min-h-[640px] overflow-hidden bg-[#edf6ff] px-4 pb-16 pt-20 text-center sm:-mx-6 sm:px-6 lg:rounded-lg">
+    <div className="bg-white">
+      <section className="relative isolate min-h-[760px] overflow-hidden bg-[#edf6ff] px-4 pb-24 pt-28 text-center sm:px-6">
         <Image src="/skyline-photo.png" alt="" fill priority sizes="100vw" className="z-0 object-cover object-center" />
-        <div className="absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.18)_38%,rgba(255,255,255,0.96)_100%)]" />
+        <div className="absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0.16)_34%,rgba(255,255,255,0.78)_72%,#fff_100%)]" />
 
         <div className="relative z-10">
           <p className="mb-5 text-sm font-semibold text-[#0066cc]">Personal flight intelligence</p>
@@ -30,40 +30,42 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="relative z-10 mx-auto mt-12 grid max-w-3xl gap-2 rounded-lg border border-black/[0.08] bg-white/70 p-2 text-left shadow-[0_20px_70px_rgba(0,0,0,0.10)] backdrop-blur md:grid-cols-3">
+        <div className="relative z-10 mx-auto mt-20 grid max-w-3xl gap-2 rounded-lg border border-black/[0.08] bg-white/72 p-2 text-left shadow-[0_24px_80px_rgba(0,0,0,0.10)] backdrop-blur-xl md:grid-cols-3">
           <HeroStep label="1" title="Import" body="DJI flight records become normalized telemetry." />
           <HeroStep label="2" title="Analyze" body="Battery, route, weather, GPS and signal are compared." />
           <HeroStep label="3" title="Learn" body="Models retrain as more real flights are added." />
         </div>
       </section>
 
-      <section className="text-center">
-        <p className="text-sm font-semibold text-[#0066cc]">Built around my own data</p>
-        <h2 className="mx-auto mt-3 max-w-3xl text-3xl font-semibold tracking-[-0.025em] text-[#1d1d1f] sm:text-5xl">
-          From raw telemetry to evidence that the model works.
-        </h2>
-        <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#6e6e73]">
-          The project records each flight, derives comparable features, validates predictions against held-out flights, and reports confidence honestly.
-        </p>
-      </section>
+      <div className="mx-auto w-full max-w-6xl space-y-20 px-4 py-20 sm:px-6">
+        <section className="text-center">
+          <p className="text-sm font-semibold text-[#0066cc]">Built around my own data</p>
+          <h2 className="mx-auto mt-3 max-w-3xl text-3xl font-semibold tracking-[-0.025em] text-[#1d1d1f] sm:text-5xl">
+            From raw telemetry to evidence that the model works.
+          </h2>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#6e6e73]">
+            The project records each flight, derives comparable features, validates predictions against held-out flights, and reports confidence honestly.
+          </p>
+        </section>
 
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Feature icon={Route} title="Replay every flight" body="Map path, synchronized telemetry, event markers, and controls for reviewing exactly what happened." />
-        <Feature icon={BatteryCharging} title="Measure efficiency" body="Compare battery drain, speed, altitude, route efficiency, signal quality, and return margin." />
-        <Feature icon={BrainCircuit} title="Validate the ML" body="Train battery, risk, and anomaly models with transparent validation metrics and confidence limits." />
-        <Feature icon={CloudSun} title="Add flight context" body="Join weather by GPS and time so changing conditions become part of the analysis." />
-      </section>
+        <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Feature icon={Route} title="Replay every flight" body="Map path, synchronized telemetry, event markers, and controls for reviewing exactly what happened." />
+          <Feature icon={BatteryCharging} title="Measure efficiency" body="Compare battery drain, speed, altitude, route efficiency, signal quality, and return margin." />
+          <Feature icon={BrainCircuit} title="Validate the ML" body="Train battery, risk, and anomaly models with transparent validation metrics and confidence limits." />
+          <Feature icon={CloudSun} title="Add flight context" body="Join weather by GPS and time so changing conditions become part of the analysis." />
+        </section>
 
-      <PipelinePreview />
+        <PipelinePreview />
 
-      <section className="border-t border-black/[0.08] py-10 text-center">
-        <h2 className="text-2xl font-semibold tracking-tight text-[#1d1d1f]">Engineering stack</h2>
-        <div className="mt-5 flex flex-wrap justify-center gap-2 text-sm text-[#6e6e73]">
-          {["Next.js", "TypeScript", "FastAPI", "Supabase", "scikit-learn", "Leaflet", "Open-Meteo", "Render", "Vercel"].map((item) => (
-            <span key={item} className="rounded-full bg-[#f5f5f7] px-4 py-2">{item}</span>
-          ))}
-        </div>
-      </section>
+        <section className="border-t border-black/[0.08] py-10 text-center">
+          <h2 className="text-2xl font-semibold tracking-tight text-[#1d1d1f]">Engineering stack</h2>
+          <div className="mt-5 flex flex-wrap justify-center gap-2 text-sm text-[#6e6e73]">
+            {["Next.js", "TypeScript", "FastAPI", "Supabase", "scikit-learn", "Leaflet", "Open-Meteo", "Render", "Vercel"].map((item) => (
+              <span key={item} className="rounded-full bg-[#f5f5f7] px-4 py-2">{item}</span>
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

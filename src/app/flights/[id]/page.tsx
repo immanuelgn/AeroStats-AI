@@ -117,29 +117,55 @@ export default function FlightDetailPage() {
 
       <TelemetryCharts flight={flight} />
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <Insight title="Battery estimate" body={`${battery.predictedBatteryUsePercent}% predicted use. ${battery.explanation}`} />
-        <Insight title="Risk classifier" body={`${risk.riskClass} risk, ${risk.score}/100. ${risk.explanation}`} />
-        <Insight title="Anomaly detector" body={anomalies.length ? `${anomalies.length} telemetry anomalies detected for review.` : "No obvious anomalies detected from available telemetry fields."} />
-      </section>
-
-      <section className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
-        <h2 className="font-semibold text-[#1d1d1f]">Flight insights</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {insights.map((insight) => (
-            <div key={insight} className="rounded-md border border-[#d2d2d7] bg-[#ffffff] p-3 text-sm leading-6 text-[#6e6e73]">{insight}</div>
-          ))}
-        </div>
-      </section>
+      <FlightIntelligenceSummary
+        battery={`${battery.predictedBatteryUsePercent}% predicted use`}
+        risk={`${risk.riskClass} risk, ${risk.score}/100`}
+        anomaly={anomalies.length ? `${anomalies.length} telemetry anomalies detected` : "No obvious anomalies"}
+        insights={insights}
+      />
     </div>
   );
 }
 
-function Insight({ title, body }: { title: string; body: string }) {
+function FlightIntelligenceSummary({ battery, risk, anomaly, insights }: { battery: string; risk: string; anomaly: string; insights: string[] }) {
+  const takeaways = insights.slice(0, 4);
   return (
-    <div className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
-      <h3 className="font-semibold text-[#1d1d1f]">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-[#6e6e73]">{body}</p>
+    <section className="overflow-hidden rounded-lg border border-black/[0.08] bg-[#f5f5f7]">
+      <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="bg-[#1d1d1f] p-6 text-white">
+          <p className="text-sm font-medium text-white/60">AI flight summary</p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-tight">{risk}</h2>
+          <p className="mt-3 text-sm leading-6 text-white/70">
+            The model summary compares battery use, movement stability, return margin, weather context, and telemetry quality for this flight.
+          </p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+            <SummaryStat label="Battery model" value={battery} dark />
+            <SummaryStat label="Anomaly scan" value={anomaly} dark />
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <h3 className="font-semibold text-[#1d1d1f]">What affected this flight</h3>
+              <p className="mt-1 text-sm text-[#6e6e73]">Readable takeaways from the telemetry and baseline ML models.</p>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
+            {takeaways.map((insight) => (
+              <div key={insight} className="rounded-md bg-white p-4 text-sm leading-6 text-[#424245] ring-1 ring-black/[0.06]">{insight}</div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SummaryStat({ label, value, dark = false }: { label: string; value: string; dark?: boolean }) {
+  return (
+    <div className={`rounded-md p-4 ${dark ? "bg-white/10" : "bg-white"}`}>
+      <p className={`text-xs font-medium uppercase tracking-wide ${dark ? "text-white/50" : "text-[#86868b]"}`}>{label}</p>
+      <p className={`mt-2 text-lg font-semibold ${dark ? "text-white" : "text-[#1d1d1f]"}`}>{value}</p>
     </div>
   );
 }

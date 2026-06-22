@@ -28,6 +28,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 function ShellFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { flights, weatherMode } = useUploadedData();
+  const home = pathname === "/";
   return (
     <div className="min-h-screen bg-white text-[#1d1d1f]">
       <header className="sticky top-0 z-40 border-b border-black/[0.08] bg-white/80 backdrop-blur-xl">
@@ -62,7 +63,7 @@ function ShellFrame({ children }: { children: React.ReactNode }) {
           })}
         </nav>
       </header>
-      <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14">{children}</main>
+      <main className={home ? "w-full" : "mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-14"}>{children}</main>
       <footer className="mx-auto max-w-6xl border-t border-black/[0.08] px-4 py-8 text-xs text-[#6e6e73] sm:px-6">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
           <div className="max-w-2xl space-y-2">

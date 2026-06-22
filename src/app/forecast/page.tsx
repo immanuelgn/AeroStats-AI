@@ -22,12 +22,14 @@ export default function ForecastPage() {
   const { backendSyncing, flights, weatherMode } = useUploadedData();
   const [windows, setWindows] = useState<WeatherWindow[]>([]);
   const [message, setMessage] = useState("");
+  const [showAllWindows, setShowAllWindows] = useState(false);
   const flight = latestFlight(flights);
   const point = flight?.telemetry.find((item) => Number.isFinite(item.latitude) && Number.isFinite(item.longitude) && Boolean(item.timestamp));
   const hasForecastLocation = Boolean(point?.timestamp && Number.isFinite(point.latitude) && Number.isFinite(point.longitude));
   const weatherStatus = getWeatherProviderStatus(weatherMode);
   const bestWindow = windows[0];
   const chronologicalWindows = [...windows].sort((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime));
+  const visibleWindows = showAllWindows ? windows : windows.slice(0, 6);
 
   if (backendSyncing && !flights.length) {
     return (
@@ -50,6 +52,7 @@ export default function ForecastPage() {
     try {
       const raw = await getForecastWindows({ latitude: point.latitude, longitude: point.longitude }, weatherMode);
       setWindows(rankFlightWindows(raw, buildUserFlightProfile(flights)));
+      setShowAllWindows(false);
       setMessage(weatherStatus.message);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Forecast fetch failed.");
@@ -112,7 +115,7 @@ export default function ForecastPage() {
                 <div className="rounded-full bg-[#0071e3] px-5 py-2 text-sm font-semibold">{bestWindow.flyabilityScore}/100</div>
               </div>
               <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <WeatherMetric icon={Thermometer} label="Temperature" value={`${formatMaybe(bestWindow.temperatureCelsius)} C`} />
+                <WeatherMetric icon={Thermometer} label="Temperature" value={`${formatMaybe(bestWindow.temperatureCelsius)} °C`} />
                 <WeatherMetric icon={Wind} label="Wind aloft" value={`${formatMaybe(bestWindow.windSpeed80mKph ?? bestWindow.windSpeed100mKph ?? bestWindow.windSpeed120mKph ?? bestWindow.windSpeedKph)} kph`} />
                 <WeatherMetric icon={CloudRain} label="Precipitation" value={`${formatMaybe(bestWindow.precipitationProbability)}%`} />
                 <WeatherMetric icon={MapPin} label="Visibility" value={`${formatMaybe(bestWindow.visibilityMeters)} m`} />
@@ -125,14 +128,33 @@ export default function ForecastPage() {
               <LineChart data={chronologicalWindows.map((window) => ({ time: new Date(window.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), score: window.flyabilityScore }))}>
                 <CartesianGrid stroke="#d2d2d7" strokeDasharray="3 3" />
                 <XAxis dataKey="time" stroke="#86868b" />
-                <YAxis stroke="#86868b" />
-                <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #d2d2d7", color: "#1d1d1f" }} />
+                <YAxis stroke="#86868b" tickFormatter={(value) => `${value}/100`} width={64} />
+                <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #d2d2d7", color: "#1d1d1f" }} formatter={(value) => [`${value}/100`, "Flyability score"]} />
                 <Line dataKey="score" stroke="#0071e3" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </ChartCard>
+
+          <section className="rounded-lg border border-black/[0.08] bg-[#f5f5f7] p-5">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+              <div>
+                <h2 className="text-lg font-semibold text-[#1d1d1f]">Best windows to consider</h2>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-[#6e6e73]">
+                  These are upcoming forecast hours ranked from strongest to weakest using wind, gusts, precipitation, visibility, and my uploaded flight profile.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAllWindows((value) => !value)}
+                className="rounded-full bg-white px-4 py-2 text-sm font-medium text-[#0066cc] ring-1 ring-black/[0.08] hover:ring-[#0071e3]/30"
+              >
+                {showAllWindows ? "Show top 6" : `Show all ${windows.length}`}
+              </button>
+            </div>
+          </section>
+
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {windows.map((window, index) => (
+            {visibleWindows.map((window, index) => (
               <div key={window.startTime} className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
@@ -144,7 +166,7 @@ export default function ForecastPage() {
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-[#6e6e73]">
                   <span>Wind aloft {window.windSpeed80mKph ?? window.windSpeed100mKph ?? window.windSpeed120mKph ?? window.windSpeedKph ?? "?"} kph</span>
                   <span>Gusts {window.windGustKph ?? "?"} kph</span>
-                  <span>Temp {window.temperatureCelsius ?? "?"} C</span>
+                  <span>Temp {window.temperatureCelsius ?? "?"} °C</span>
                   <span>Precip {window.precipitationProbability ?? "?"}%</span>
                   <span>Visibility {window.visibilityMeters ?? "?"} m</span>
                   <span>Score {window.flyabilityScore}/100</span>

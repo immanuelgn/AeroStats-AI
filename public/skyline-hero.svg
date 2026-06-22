@@ -1,7 +1,8 @@
 <svg width="2400" height="1100" viewBox="0 0 2400 1100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="2400" height="1100" fill="url(#sky)"/>
-  <path d="M0 655C248 587 420 617 622 570C823 523 1007 453 1228 492C1448 530 1604 635 1842 618C2081 601 2233 514 2400 542V1100H0V655Z" fill="url(#haze)"/>
-  <g opacity=".38" fill="#0071E3">
+  <circle cx="1820" cy="190" r="92" fill="url(#sun)"/>
+  <path d="M0 610C248 545 420 578 622 528C823 478 1007 408 1228 448C1448 488 1604 590 1842 573C2081 556 2233 470 2400 498V1100H0V610Z" fill="url(#haze)"/>
+  <g opacity=".62" fill="#0071E3">
     <rect x="88" y="672" width="84" height="210" rx="8"/>
     <rect x="204" y="620" width="114" height="262" rx="10"/>
     <rect x="360" y="690" width="62" height="192" rx="8"/>
@@ -17,7 +18,7 @@
     <rect x="2018" y="598" width="130" height="284" rx="12"/>
     <rect x="2198" y="668" width="96" height="214" rx="10"/>
   </g>
-  <g opacity=".55" fill="#1D1D1F">
+  <g opacity=".78" fill="#1D1D1F">
     <rect x="100" y="752" width="92" height="210" rx="8"/>
     <rect x="238" y="714" width="132" height="248" rx="10"/>
     <rect x="424" y="780" width="70" height="182" rx="8"/>
@@ -32,19 +33,23 @@
     <rect x="2158" y="752" width="112" height="210" rx="10"/>
   </g>
   <path d="M0 855C327 812 552 847 835 802C1118 757 1378 720 1674 765C1970 810 2191 836 2400 782V1100H0V855Z" fill="url(#fog)"/>
-  <rect y="920" width="2400" height="180" fill="url(#fade)"/>
+  <rect y="985" width="2400" height="115" fill="url(#fade)"/>
   <defs>
     <linearGradient id="sky" x1="1200" y1="0" x2="1200" y2="1100" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#F8FBFF"/>
       <stop offset=".42" stop-color="#EAF4FF"/>
       <stop offset=".78" stop-color="#FFFFFF"/>
     </linearGradient>
+    <radialGradient id="sun" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1820 190) rotate(90) scale(118)">
+      <stop stop-color="#BFDFFF" stop-opacity=".72"/>
+      <stop offset="1" stop-color="#BFDFFF" stop-opacity="0"/>
+    </radialGradient>
     <linearGradient id="haze" x1="1200" y1="462" x2="1200" y2="1100" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#C9E2FF" stop-opacity=".55"/>
-      <stop offset="1" stop-color="#FFFFFF"/>
+      <stop stop-color="#A9D0FF" stop-opacity=".72"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity=".88"/>
     </linearGradient>
     <linearGradient id="fog" x1="1200" y1="721" x2="1200" y2="1100" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF" stop-opacity=".38"/>
+      <stop stop-color="#FFFFFF" stop-opacity=".22"/>
       <stop offset="1" stop-color="#FFFFFF"/>
     </linearGradient>
     <linearGradient id="fade" x1="1200" y1="825" x2="1200" y2="1100" gradientUnits="userSpaceOnUse">

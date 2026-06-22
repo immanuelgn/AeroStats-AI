@@ -7,28 +7,30 @@ import { PipelinePreview } from "@/components/dashboard/PipelinePreview";
 export default function Home() {
   return (
     <div className="space-y-20">
-      <section className="relative -mx-4 overflow-hidden px-4 pb-16 pt-20 text-center sm:-mx-6 sm:px-6 lg:rounded-lg">
-        <Image src="/skyline-hero.svg" alt="" fill priority className="-z-10 object-cover object-bottom" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white/5 via-white/35 to-white/90" />
+      <section className="relative isolate -mx-4 min-h-[640px] overflow-hidden bg-[#edf6ff] px-4 pb-16 pt-20 text-center sm:-mx-6 sm:px-6 lg:rounded-lg">
+        <Image src="/skyline-hero.svg" alt="" fill priority sizes="100vw" className="z-0 object-cover object-bottom" />
+        <div className="absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.28)_42%,rgba(255,255,255,0.94)_100%)]" />
 
-        <p className="mb-5 text-sm font-semibold text-[#0066cc]">Personal flight intelligence</p>
-        <h1 className="mx-auto max-w-4xl text-5xl font-semibold tracking-[-0.035em] text-[#1d1d1f] sm:text-7xl">
-          Every flight becomes a better prediction.
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-[#424245] sm:text-xl">
-          A polished telemetry workspace for replaying my drone flights, explaining battery behavior, and validating machine-learning models as the dataset grows.
-        </p>
+        <div className="relative z-10">
+          <p className="mb-5 text-sm font-semibold text-[#0066cc]">Personal flight intelligence</p>
+          <h1 className="mx-auto max-w-4xl text-5xl font-semibold tracking-[-0.035em] text-[#1d1d1f] sm:text-7xl">
+            Every flight becomes a better prediction.
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-[#424245] sm:text-xl">
+            A polished telemetry workspace for replaying my drone flights, explaining battery behavior, and validating machine-learning models as the dataset grows.
+          </p>
 
-        <div className="mt-9 flex flex-wrap justify-center gap-3">
-          <Link href="/dashboard" className="rounded-full bg-[#0071e3] px-6 py-3 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,113,227,0.25)] hover:bg-[#0077ed]">
-            View dashboard
-          </Link>
-          <Link href="/model" className="rounded-full bg-white/80 px-6 py-3 text-sm font-medium text-[#0066cc] ring-1 ring-[#0071e3]/20 backdrop-blur hover:bg-white">
-            Open model lab
-          </Link>
+          <div className="mt-9 flex flex-wrap justify-center gap-3">
+            <Link href="/dashboard" className="rounded-full bg-[#0071e3] px-6 py-3 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,113,227,0.25)] hover:bg-[#0077ed]">
+              View dashboard
+            </Link>
+            <Link href="/model" className="rounded-full bg-white/80 px-6 py-3 text-sm font-medium text-[#0066cc] ring-1 ring-[#0071e3]/20 backdrop-blur hover:bg-white">
+              Open model lab
+            </Link>
+          </div>
         </div>
 
-        <div className="mx-auto mt-12 grid max-w-3xl gap-2 rounded-lg border border-black/[0.08] bg-white/70 p-2 text-left shadow-[0_20px_70px_rgba(0,0,0,0.10)] backdrop-blur md:grid-cols-3">
+        <div className="relative z-10 mx-auto mt-12 grid max-w-3xl gap-2 rounded-lg border border-black/[0.08] bg-white/70 p-2 text-left shadow-[0_20px_70px_rgba(0,0,0,0.10)] backdrop-blur md:grid-cols-3">
           <HeroStep label="1" title="Import" body="DJI flight records become normalized telemetry." />
           <HeroStep label="2" title="Analyze" body="Battery, route, weather, GPS and signal are compared." />
           <HeroStep label="3" title="Learn" body="Models retrain as more real flights are added." />

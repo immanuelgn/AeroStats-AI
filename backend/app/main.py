@@ -46,13 +46,27 @@ def health() -> dict[str, Any]:
     }
 
 
+@app.get("/health/deep")
+def deep_health() -> dict[str, Any]:
+    diagnostics = repo.diagnostics()
+    return {
+        "ok": bool(diagnostics.get("ok")),
+        "service": "aerostats-ai-backend",
+        "supabaseConfigured": settings.supabase_configured,
+        "diagnostics": diagnostics,
+    }
+
+
 @app.get("/model/status")
 def model_status() -> dict[str, Any]:
+    diagnostics = repo.diagnostics()
     return {
         "backend": "ready",
         "supabaseConfigured": settings.supabase_configured,
+        "supabaseReady": bool(diagnostics.get("ok")),
+        "supabaseDiagnostics": diagnostics,
         "modelArtifactStorage": settings.model_artifact_bucket,
-        "latestModelRuns": repo.list_model_runs(),
+        "latestModelRuns": repo.list_model_runs() if diagnostics.get("ok") else [],
         "loadedArtifacts": list(ARTIFACTS.keys()),
         "honestyNote": "High confidence is only returned when multiple flights, enough segment rows, strong feature completeness, validation metrics, and narrow intervals support it.",
     }

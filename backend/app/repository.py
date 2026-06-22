@@ -161,6 +161,40 @@ class Repository:
         response = self.client.table("model_runs").select("*").order("created_at", desc=True).limit(20).execute()
         return response.data or []
 
+    def diagnostics(self) -> dict[str, Any]:
+        report: dict[str, Any] = {
+            "configured": self.configured,
+            "tables": {},
+            "storageBuckets": {},
+        }
+        if not self.client:
+            report["error"] = "Supabase environment variables are not configured."
+            return report
+        for table in [
+            "flights",
+            "telemetry_points",
+            "flight_metrics",
+            "weather_snapshots",
+            "feature_vectors",
+            "model_runs",
+            "predictions",
+            "parser_diagnostics",
+            "weather_cache",
+        ]:
+            try:
+                response = self.client.table(table).select("id", count="exact").limit(1).execute()
+                report["tables"][table] = {"ok": True, "sampleRows": len(response.data or [])}
+            except Exception as exc:
+                report["tables"][table] = {"ok": False, "error": _safe_error(exc)}
+        for bucket in [self.settings.supabase_storage_bucket, self.settings.model_artifact_bucket]:
+            try:
+                self.client.storage.from_(bucket).list("", {"limit": 1})
+                report["storageBuckets"][bucket] = {"ok": True}
+            except Exception as exc:
+                report["storageBuckets"][bucket] = {"ok": False, "error": _safe_error(exc)}
+        report["ok"] = all(item["ok"] for item in report["tables"].values()) and all(item["ok"] for item in report["storageBuckets"].values())
+        return report
+
     def save_prediction(self, row: dict[str, Any]) -> dict[str, Any]:
         row.setdefault("id", str(uuid4()))
         if self.client:
@@ -222,6 +256,14 @@ class Repository:
 
 def _safe_name(filename: str) -> str:
     return "".join(ch for ch in filename if ch.isalnum() or ch in ("-", "_", "."))[:120]
+
+
+def _safe_error(exc: Exception) -> str:
+    text = str(exc)
+    for marker in ("sb_secret_", "eyJ"):
+        if marker in text:
+            text = text.split(marker)[0] + "[redacted]"
+    return text[:500]
 
 
 def _metrics_row(flight: FlightRecord) -> dict[str, Any]:

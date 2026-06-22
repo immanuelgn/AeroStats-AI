@@ -32,6 +32,24 @@ export async function getModelStatus(): Promise<BackendModelStatus> {
   return apiFetch<BackendModelStatus>("/model/status");
 }
 
+export async function fetchBackendFlights(): Promise<FlightRecord[]> {
+  const response = await apiFetch<{ flights: Array<Record<string, unknown>> }>("/flights");
+  const rows = response.flights ?? [];
+  const detailed = await Promise.all(
+    rows.map(async (row) => {
+      const id = String(row.id ?? "");
+      if (!id) return null;
+      try {
+        const detail = await apiFetch<{ flight: Record<string, unknown> }>(`/flights/${id}`);
+        return normalizeBackendFlight(detail.flight);
+      } catch {
+        return null;
+      }
+    }),
+  );
+  return detailed.filter((flight): flight is FlightRecord => Boolean(flight));
+}
+
 export async function uploadFlightToBackend(file: File, normalizedTelemetry?: FlightRecord["telemetry"]): Promise<{ parser: ParserResult; flights: FlightRecord[] }> {
   const form = new FormData();
   form.append("file", file);

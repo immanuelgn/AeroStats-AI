@@ -11,11 +11,20 @@ import { getForecastWindows, getWeatherProviderStatus } from "@/lib/weather/prov
 import { buildUserFlightProfile, rankFlightWindows } from "@/lib/ml/baseline";
 
 export default function ForecastPage() {
-  const { flights, weatherMode } = useUploadedData();
+  const { backendSyncing, flights, weatherMode } = useUploadedData();
   const [windows, setWindows] = useState<WeatherWindow[]>([]);
   const [message, setMessage] = useState("");
   const flight = latestFlight(flights);
   const point = flight?.telemetry[0];
+
+  if (backendSyncing && !flights.length) {
+    return (
+      <div className="rounded-lg border border-[#d2d2d7] bg-[#f5f5f7] p-8 text-center">
+        <h1 className="text-xl font-semibold text-[#1d1d1f]">Loading my flight history...</h1>
+        <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#6e6e73]">AeroStats AI is syncing saved flights from the backend before building a forecast location.</p>
+      </div>
+    );
+  }
 
   if (!flight?.featureAvailability.forecast || !point) {
     return <EmptyState title="Forecasting requires an uploaded flight with GPS coordinates and timestamps." body="Upload telemetry with timestamp, latitude, and longitude before ranking flight windows." />;

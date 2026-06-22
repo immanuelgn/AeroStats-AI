@@ -4,12 +4,13 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import type { FlightRecord, ParserResult, UploadedDataState, WeatherMode, WeatherProviderStatus } from "@/types";
 import { parseUploadedFlightFile } from "@/lib/parsers/flightParsers";
 import { getHistoricalWeatherForFlight, getWeatherProviderStatus, joinWeatherToTelemetry } from "@/lib/weather/providers";
-import { isBackendConfigured, uploadFlightToBackend } from "@/lib/api/client";
+import { fetchBackendFlights, isBackendConfigured, uploadFlightToBackend } from "@/lib/api/client";
 import { deriveFlightMetrics } from "@/lib/analytics/metrics";
 import { generateFlightEvents, generateFlightTags } from "@/lib/data/events";
 
 type DataContextValue = UploadedDataState & {
   importing: boolean;
+  backendSyncing: boolean;
   importFiles: (files: File[]) => Promise<ParserResult[]>;
   clearData: () => void;
   setWeatherMode: (mode: WeatherMode) => void;
@@ -49,11 +50,33 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   });
   const [importing, setImporting] = useState(false);
+  const [backendSyncing, setBackendSyncing] = useState(() => isBackendConfigured());
   const weatherJoinRunning = useRef(false);
 
   useEffect(() => {
     window.localStorage.setItem(storageKey, JSON.stringify(state));
   }, [state]);
+
+  useEffect(() => {
+    if (!isBackendConfigured()) return;
+    let cancelled = false;
+    void fetchBackendFlights()
+      .then((backendFlights) => {
+        if (cancelled || !backendFlights.length) return;
+        setState((current) => ({
+          ...current,
+          flights: mergeFlights(current.flights, backendFlights),
+          updatedAt: new Date().toISOString(),
+        }));
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) setBackendSyncing(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const pending = state.flights.filter((flight) => !flight.weatherJoined);
@@ -100,6 +123,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     () => ({
       ...state,
       importing,
+      backendSyncing,
       importFiles: async (files: File[]) => {
         setImporting(true);
         const results: ParserResult[] = [];
@@ -174,7 +198,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           updatedAt: new Date().toISOString(),
         })),
     }),
-    [importing, state],
+    [backendSyncing, importing, state],
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
@@ -184,4 +208,18 @@ export function useUploadedData() {
   const context = useContext(DataContext);
   if (!context) throw new Error("useUploadedData must be used inside DataProvider");
   return context;
+}
+
+function mergeFlights(localFlights: FlightRecord[], backendFlights: FlightRecord[]) {
+  const merged = new Map<string, FlightRecord>();
+  for (const flight of backendFlights) merged.set(flight.id, flight);
+  for (const flight of localFlights) {
+    const backendFlight = merged.get(flight.id);
+    merged.set(flight.id, flight.telemetry.length || !backendFlight ? flight : backendFlight);
+  }
+  return Array.from(merged.values()).sort((a, b) => {
+    const bTime = new Date(b.metadata.startTime ?? b.importedAt).getTime();
+    const aTime = new Date(a.metadata.startTime ?? a.importedAt).getTime();
+    return bTime - aTime;
+  });
 }

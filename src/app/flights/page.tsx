@@ -24,6 +24,17 @@ export default function FlightsPage() {
         <h1 className="text-3xl font-semibold text-[#1d1d1f]">Flight library</h1>
         <p className="mt-2 text-sm text-[#6e6e73]">My flight history, searchable by date, location, tags, and calculated risk.</p>
       </div>
+      <section className="rounded-lg border border-black/[0.08] bg-[#f5f5f7] p-5">
+        <h2 className="text-lg font-semibold text-[#1d1d1f]">What this page does</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6e6e73]">
+          Flights is the archive of every uploaded DJI flight record. Each card opens a full replay with the map path, timeline, battery and speed charts, weather joins, and model-generated insights for that specific flight.
+        </p>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <Explainer title="Replay" body="See the route, takeoff, landing, and key telemetry moments on the map." />
+          <Explainer title="Compare" body="Review distance, duration, battery used, drain rate, and risk estimate." />
+          <Explainer title="Learn" body="Use each flight as training history so predictions improve as the dataset grows." />
+        </div>
+      </section>
       {!flights.length ? (
         <EmptyState title="No flights imported yet." body="My first supported flight log will create the initial replay, metrics, and model-training record." />
       ) : (
@@ -42,6 +53,15 @@ export default function FlightsPage() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function Explainer({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-md bg-white p-4 ring-1 ring-black/[0.06]">
+      <h3 className="text-sm font-semibold text-[#1d1d1f]">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-[#6e6e73]">{body}</p>
     </div>
   );
 }

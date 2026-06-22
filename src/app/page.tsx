@@ -17,7 +17,7 @@ export default function Home() {
             Every flight becomes a better prediction.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-[#424245] sm:text-xl">
-            A polished telemetry workspace for replaying my drone flights, explaining battery behavior, and validating machine-learning models as the dataset grows.
+            I built AeroStats AI to turn my drone flight logs into something anyone can understand: where I flew, how the battery behaved, what conditions affected the flight, and how machine learning can improve the next prediction as more flights are added.
           </p>
 
           <div className="mt-9 flex flex-wrap justify-center gap-3">
@@ -44,7 +44,7 @@ export default function Home() {
             From raw telemetry to evidence that the model works.
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#6e6e73]">
-            The project records each flight, derives comparable features, validates predictions against held-out flights, and reports confidence honestly.
+            Each uploaded DJI log becomes a replayable flight story with maps, battery efficiency, weather context, and transparent model outputs that show what the system knows and what still needs more data.
           </p>
         </section>
 

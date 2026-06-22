@@ -64,7 +64,9 @@ export default function ForecastPage() {
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
         <div>
           <h1 className="text-3xl font-semibold text-[#1d1d1f]">Best-time-to-fly forecast</h1>
-          <p className="mt-2 text-sm text-[#6e6e73]">Default location comes from the latest uploaded flight: {flight.metadata.locationLabel}.</p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6e6e73]">
+            Forecast uses the latest uploaded flight path as the default location, then ranks upcoming weather windows for safer planning around that same area.
+          </p>
         </div>
         <button onClick={() => void fetchForecast()} className="rounded-full bg-[#0071e3] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#0077ed]">Rank forecast windows</button>
       </div>
@@ -73,8 +75,8 @@ export default function ForecastPage() {
         <div className="overflow-hidden rounded-lg border border-black/[0.08] bg-white">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/[0.08] p-4">
             <div>
-              <h2 className="font-semibold text-[#1d1d1f]">Forecast location</h2>
-              <p className="mt-1 text-sm text-[#6e6e73]">Based on the latest uploaded flight path.</p>
+              <h2 className="font-semibold text-[#1d1d1f]">Latest flight location used for forecast</h2>
+              <p className="mt-1 text-sm text-[#6e6e73]">This is the most recent uploaded route. The ranked windows below use this location.</p>
             </div>
             <span className="rounded-full bg-[#0071e3]/10 px-3 py-1 text-xs font-medium text-[#0066cc]">{flight.metadata.locationLabel}</span>
           </div>
@@ -90,11 +92,11 @@ export default function ForecastPage() {
             <LocationMetric label="Coordinates" value={`${point.latitude.toFixed(4)}, ${point.longitude.toFixed(4)}`} />
             <LocationMetric label="Source flight" value={flight.name} />
             <LocationMetric label="Weather provider" value={weatherStatus.label} />
-            <LocationMetric label="Ranking mode" value="Best upcoming windows by flyability score" />
+            <LocationMetric label="Ranking mode" value="Future weather windows scored for flyability" />
           </dl>
           {!windows.length ? (
             <p className="mt-5 rounded-md bg-white p-3 text-sm leading-6 text-[#6e6e73]">
-              Press Rank forecast windows to pull weather for this location and score each upcoming flight window.
+              Press Rank forecast windows to pull upcoming weather for this exact flight area and score which times look best to fly.
             </p>
           ) : null}
         </div>
@@ -110,12 +112,14 @@ export default function ForecastPage() {
                 <div>
                   <p className="text-sm font-medium text-white/65">Top ranked window</p>
                   <h2 className="mt-2 text-3xl font-semibold tracking-tight">{new Date(bestWindow.startTime).toLocaleString()}</h2>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-white/70">{bestWindow.recommendation?.reason}</p>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-white/70">
+                    Best predicted time from the available forecast windows for this latest flight area. {bestWindow.recommendation?.reason}
+                  </p>
                 </div>
                 <div className="rounded-full bg-[#0071e3] px-5 py-2 text-sm font-semibold">{bestWindow.flyabilityScore}/100</div>
               </div>
               <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <WeatherMetric icon={Thermometer} label="Temperature" value={`${formatMaybe(bestWindow.temperatureCelsius)} °C`} />
+                <WeatherMetric icon={Thermometer} label="Temperature" value={`${formatMaybe(bestWindow.temperatureCelsius)} C`} />
                 <WeatherMetric icon={Wind} label="Wind aloft" value={`${formatMaybe(bestWindow.windSpeed80mKph ?? bestWindow.windSpeed100mKph ?? bestWindow.windSpeed120mKph ?? bestWindow.windSpeedKph)} kph`} />
                 <WeatherMetric icon={CloudRain} label="Precipitation" value={`${formatMaybe(bestWindow.precipitationProbability)}%`} />
                 <WeatherMetric icon={MapPin} label="Visibility" value={`${formatMaybe(bestWindow.visibilityMeters)} m`} />
@@ -166,7 +170,7 @@ export default function ForecastPage() {
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-[#6e6e73]">
                   <span>Wind aloft {window.windSpeed80mKph ?? window.windSpeed100mKph ?? window.windSpeed120mKph ?? window.windSpeedKph ?? "?"} kph</span>
                   <span>Gusts {window.windGustKph ?? "?"} kph</span>
-                  <span>Temp {window.temperatureCelsius ?? "?"} °C</span>
+                  <span>Temp {window.temperatureCelsius ?? "?"} C</span>
                   <span>Precip {window.precipitationProbability ?? "?"}%</span>
                   <span>Visibility {window.visibilityMeters ?? "?"} m</span>
                   <span>Score {window.flyabilityScore}/100</span>
@@ -175,7 +179,7 @@ export default function ForecastPage() {
               </div>
             ))}
           </div>
-          <p className="text-sm text-[#6e6e73]">Recommended window based on estimated weather conditions and past flight patterns.</p>
+          <p className="text-sm text-[#6e6e73]">These are planning estimates, not flight clearance. They combine upcoming forecast weather with patterns from uploaded flights.</p>
         </>
       ) : null}
       <div className="rounded-lg border border-[#0071e3]/30 bg-[#0071e3]/10 p-4 text-sm leading-6 text-[#0066cc]">

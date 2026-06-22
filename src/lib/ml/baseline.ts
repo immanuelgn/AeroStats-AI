@@ -33,6 +33,9 @@ export function buildFeaturesFromFlight(flight: FlightRecord): FlightFeatures {
   const satellites = flight.telemetry.map((point) => point.gpsSatellites).filter((value): value is number => value !== undefined);
   const signals = flight.telemetry.map((point) => point.signalStrengthPercent).filter((value): value is number => value !== undefined);
   const winds = flight.telemetry.map((point) => point.weather?.windSpeedKph).filter((value): value is number => value !== undefined);
+  const altitudeWinds = flight.telemetry
+    .map((point) => point.weather?.windSpeed100mKph ?? point.weather?.windSpeed80mKph ?? point.weather?.windSpeed120mKph)
+    .filter((value): value is number => value !== undefined);
   const gusts = flight.telemetry.map((point) => point.weather?.windGustKph).filter((value): value is number => value !== undefined);
   const temps = flight.telemetry.map((point) => point.weather?.temperatureCelsius).filter((value): value is number => value !== undefined);
   const precip = flight.telemetry.map((point) => point.weather?.precipitationProbability).filter((value): value is number => value !== undefined);
@@ -47,7 +50,7 @@ export function buildFeaturesFromFlight(flight: FlightRecord): FlightFeatures {
     gpsSatellites: satellites.length ? average(satellites) : undefined,
     signalStrength: signals.length ? average(signals) : undefined,
     returnMargin: flight.metrics.returnMargin,
-    windSpeedKph: winds.length ? average(winds) : undefined,
+    windSpeedKph: altitudeWinds.length ? average(altitudeWinds) : winds.length ? average(winds) : undefined,
     windGustKph: gusts.length ? average(gusts) : undefined,
     temperatureCelsius: temps.length ? average(temps) : undefined,
     precipitationProbability: precip.length ? average(precip) : undefined,

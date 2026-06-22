@@ -125,7 +125,7 @@ export function calculateReturnMargin(telemetry: TelemetryPoint[]) {
 
 export function calculateWindImpactScore(telemetry: TelemetryPoint[]) {
   const winds = telemetry
-    .map((point) => point.weather?.windSpeedKph)
+    .map((point) => point.weather?.windSpeed100mKph ?? point.weather?.windSpeed80mKph ?? point.weather?.windSpeed120mKph ?? point.weather?.windSpeedKph)
     .filter((value): value is number => value !== undefined);
   if (!winds.length) return undefined;
   return clamp((winds.reduce((sum, value) => sum + value, 0) / winds.length) * 3);
@@ -154,7 +154,8 @@ export function calculateRiskScore(metrics: FlightMetrics) {
 
 export function calculateFlyabilityScore(window: WeatherWindow, baselineRisk = 35) {
   let score = 92 - baselineRisk * 0.25;
-  if (window.windSpeedKph !== undefined) score -= Math.max(0, window.windSpeedKph - 10) * 1.8;
+  const altitudeWind = window.windSpeed80mKph ?? window.windSpeed100mKph ?? window.windSpeed120mKph ?? window.windSpeedKph;
+  if (altitudeWind !== undefined) score -= Math.max(0, altitudeWind - 10) * 1.8;
   if (window.windGustKph !== undefined) score -= Math.max(0, window.windGustKph - 16) * 1.4;
   if (window.precipitationProbability !== undefined) score -= window.precipitationProbability * 0.45;
   if (window.visibilityMeters !== undefined && window.visibilityMeters < 5000) score -= 18;

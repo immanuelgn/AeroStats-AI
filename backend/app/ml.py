@@ -169,7 +169,9 @@ def rank_flight_windows(windows: list[dict[str, Any]], user_profile: dict[str, A
             **user_profile,
             "temperature_celsius": window.get("temperatureCelsius"),
             "wind_speed_kph": window.get("windSpeedKph"),
+            "wind_speed_altitude_kph": window.get("windSpeed80mKph") or window.get("windSpeed100mKph") or window.get("windSpeed120mKph"),
             "wind_gust_kph": window.get("windGustKph"),
+            "precipitation_mm": window.get("precipitationMm"),
             "precipitation_probability": window.get("precipitationProbability"),
             "visibility_meters": window.get("visibilityMeters"),
             "cloud_cover_percent": window.get("cloudCoverPercent"),
@@ -219,7 +221,9 @@ def _battery_training_rows(flight_rows, segment_rows):
                 "signal_strength_percent": row.get("signal_strength"),
                 "temperature_celsius": row.get("temperature"),
                 "wind_speed_kph": row.get("wind_speed"),
+                "wind_speed_altitude_kph": row.get("wind_speed_altitude"),
                 "wind_gust_kph": row.get("wind_gust"),
+                "precipitation_mm": row.get("precipitation_mm"),
                 "precipitation_probability": row.get("precipitation_probability"),
                 "feature_completeness_score": row.get("feature_completeness_score"),
                 "target": row["battery_delta"],
@@ -346,7 +350,8 @@ def _anomaly_explanation(row):
 
 def _flyability_score(window, risk):
     score = 88
-    score -= max(0, (window.get("windSpeedKph") or 0) - 10) * 1.8
+    altitude_wind = window.get("windSpeed80mKph") or window.get("windSpeed100mKph") or window.get("windSpeed120mKph") or window.get("windSpeedKph") or 0
+    score -= max(0, altitude_wind - 10) * 1.8
     score -= max(0, (window.get("windGustKph") or 0) - 16) * 1.4
     score -= (window.get("precipitationProbability") or 0) * 0.4
     if risk.get("riskClass") == "High":

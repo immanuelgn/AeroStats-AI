@@ -67,7 +67,7 @@ export default function ForecastPage() {
                   <span className="rounded-md border border-[#0071e3]/40 px-2 py-1 text-xs text-[#0066cc]">{window.recommendation?.label}</span>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-[#6e6e73]">
-                  <span>Wind {window.windSpeedKph ?? "?"} kph</span>
+                  <span>Wind aloft {window.windSpeed80mKph ?? window.windSpeed100mKph ?? window.windSpeed120mKph ?? window.windSpeedKph ?? "?"} kph</span>
                   <span>Gusts {window.windGustKph ?? "?"} kph</span>
                   <span>Temp {window.temperatureCelsius ?? "?"} C</span>
                   <span>Precip {window.precipitationProbability ?? "?"}%</span>

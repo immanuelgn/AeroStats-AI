@@ -7,7 +7,17 @@ from .config import Settings
 from .models import FlightRecord
 from .repository import Repository
 
-HOURLY = "temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation_probability,cloud_cover,visibility"
+HISTORICAL_HOURLY = (
+    "temperature_2m,relative_humidity_2m,surface_pressure,precipitation,"
+    "weather_code,cloud_cover,wind_speed_10m,wind_speed_100m,"
+    "wind_direction_10m,wind_direction_100m,wind_gusts_10m"
+)
+FORECAST_HOURLY = (
+    "temperature_2m,relative_humidity_2m,surface_pressure,precipitation,"
+    "precipitation_probability,weather_code,cloud_cover,visibility,"
+    "wind_speed_10m,wind_speed_80m,wind_speed_120m,"
+    "wind_direction_10m,wind_direction_80m,wind_direction_120m,wind_gusts_10m"
+)
 
 
 async def get_historical_weather_for_flight(flight: FlightRecord, repo: Repository, settings: Settings) -> list[dict[str, Any]]:
@@ -20,7 +30,7 @@ async def get_historical_weather_for_flight(flight: FlightRecord, repo: Reposito
     if cached:
         return cached["response_json"]
     url = "https://archive-api.open-meteo.com/v1/archive"
-    params = {"latitude": first.latitude, "longitude": first.longitude, "start_date": start, "end_date": start, "hourly": HOURLY}
+    params = {"latitude": first.latitude, "longitude": first.longitude, "start_date": start, "end_date": start, "hourly": HISTORICAL_HOURLY}
     async with httpx.AsyncClient(timeout=20) as client:
         response = await client.get(url, params=params)
         response.raise_for_status()
@@ -35,7 +45,7 @@ async def get_forecast_windows(lat: float, lon: float, repo: Repository, setting
     if cached:
         return cached["response_json"]
     async with httpx.AsyncClient(timeout=20) as client:
-        response = await client.get(f"{settings.open_meteo_base_url}/forecast", params={"latitude": lat, "longitude": lon, "forecast_days": 2, "hourly": HOURLY})
+        response = await client.get(f"{settings.open_meteo_base_url}/forecast", params={"latitude": lat, "longitude": lon, "forecast_days": 2, "hourly": FORECAST_HOURLY})
         response.raise_for_status()
     windows = _normalize_hourly(response.json(), lat, lon)[:24]
     cache_weather_result(repo, cache_key, lat, lon, windows, "open-meteo")
@@ -77,12 +87,22 @@ def _normalize_hourly(data: dict[str, Any], lat: float, lon: float) -> list[dict
             "latitude": lat,
             "longitude": lon,
             "temperatureCelsius": _at(hourly, "temperature_2m", index),
+            "relativeHumidityPercent": _at(hourly, "relative_humidity_2m", index),
+            "surfacePressureHpa": _at(hourly, "surface_pressure", index),
             "windSpeedKph": _at(hourly, "wind_speed_10m", index),
+            "windSpeed80mKph": _at(hourly, "wind_speed_80m", index),
+            "windSpeed100mKph": _at(hourly, "wind_speed_100m", index),
+            "windSpeed120mKph": _at(hourly, "wind_speed_120m", index),
             "windGustKph": _at(hourly, "wind_gusts_10m", index),
             "windDirectionDegrees": _at(hourly, "wind_direction_10m", index),
+            "windDirection80mDegrees": _at(hourly, "wind_direction_80m", index),
+            "windDirection100mDegrees": _at(hourly, "wind_direction_100m", index),
+            "windDirection120mDegrees": _at(hourly, "wind_direction_120m", index),
+            "precipitationMm": _at(hourly, "precipitation", index),
             "precipitationProbability": _at(hourly, "precipitation_probability", index),
             "cloudCoverPercent": _at(hourly, "cloud_cover", index),
             "visibilityMeters": _at(hourly, "visibility", index),
+            "weatherCode": _at(hourly, "weather_code", index),
             "provider": "open-meteo",
         })
     return rows

@@ -68,7 +68,10 @@ export class OpenMeteoWeatherProvider implements WeatherProvider {
     url.searchParams.set("longitude", String(first.longitude));
     url.searchParams.set("start_date", date);
     url.searchParams.set("end_date", date);
-    url.searchParams.set("hourly", "temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation_probability,cloud_cover,visibility");
+    url.searchParams.set(
+      "hourly",
+      "temperature_2m,relative_humidity_2m,surface_pressure,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_speed_100m,wind_direction_10m,wind_direction_100m,wind_gusts_10m",
+    );
     const data = await fetch(url).then((response) => response.json());
     const snapshots = normalizeOpenMeteoHourly(data);
     cacheWeatherResult(key, snapshots);
@@ -82,7 +85,10 @@ export class OpenMeteoWeatherProvider implements WeatherProvider {
     url.searchParams.set("latitude", String(location.latitude));
     url.searchParams.set("longitude", String(location.longitude));
     url.searchParams.set("forecast_days", "2");
-    url.searchParams.set("hourly", "temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation_probability,cloud_cover,visibility");
+    url.searchParams.set(
+      "hourly",
+      "temperature_2m,relative_humidity_2m,surface_pressure,precipitation,precipitation_probability,weather_code,cloud_cover,visibility,wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_direction_10m,wind_direction_80m,wind_direction_120m,wind_gusts_10m",
+    );
     const data = await fetch(url).then((response) => response.json());
     const windows = normalizeOpenMeteoHourly(data)
       .slice(0, 24)
@@ -159,12 +165,22 @@ function normalizeOpenMeteoHourly(data: {
   hourly?: {
     time?: string[];
     temperature_2m?: number[];
+    relative_humidity_2m?: number[];
+    surface_pressure?: number[];
     wind_speed_10m?: number[];
+    wind_speed_80m?: number[];
+    wind_speed_100m?: number[];
+    wind_speed_120m?: number[];
     wind_gusts_10m?: number[];
     wind_direction_10m?: number[];
+    wind_direction_80m?: number[];
+    wind_direction_100m?: number[];
+    wind_direction_120m?: number[];
+    precipitation?: number[];
     precipitation_probability?: number[];
     cloud_cover?: number[];
     visibility?: number[];
+    weather_code?: number[];
   };
 }) {
   const hourly = data.hourly;
@@ -172,11 +188,21 @@ function normalizeOpenMeteoHourly(data: {
   return hourly.time.map((time, index) => ({
     timestamp: new Date(time).toISOString(),
     temperatureCelsius: hourly.temperature_2m?.[index],
+    relativeHumidityPercent: hourly.relative_humidity_2m?.[index],
+    surfacePressureHpa: hourly.surface_pressure?.[index],
     windSpeedKph: hourly.wind_speed_10m?.[index],
+    windSpeed80mKph: hourly.wind_speed_80m?.[index],
+    windSpeed100mKph: hourly.wind_speed_100m?.[index],
+    windSpeed120mKph: hourly.wind_speed_120m?.[index],
     windGustKph: hourly.wind_gusts_10m?.[index],
     windDirectionDegrees: hourly.wind_direction_10m?.[index],
+    windDirection80mDegrees: hourly.wind_direction_80m?.[index],
+    windDirection100mDegrees: hourly.wind_direction_100m?.[index],
+    windDirection120mDegrees: hourly.wind_direction_120m?.[index],
+    precipitationMm: hourly.precipitation?.[index],
     precipitationProbability: hourly.precipitation_probability?.[index],
     cloudCoverPercent: hourly.cloud_cover?.[index],
     visibilityMeters: hourly.visibility?.[index],
+    weatherCode: hourly.weather_code?.[index],
   }));
 }

@@ -22,7 +22,9 @@ FEATURE_COLUMNS = [
     "signal_strength_percent",
     "temperature_celsius",
     "wind_speed_kph",
+    "wind_speed_altitude_kph",
     "wind_gust_kph",
+    "precipitation_mm",
     "precipitation_probability",
     "visibility_meters",
     "cloud_cover_percent",
@@ -51,7 +53,9 @@ def extract_flight_feature_vector(flight: FlightRecord) -> dict[str, Any]:
         "signal_strength_percent": mean(signals) if signals else None,
         "temperature_celsius": _weather_mean(weather, "temperatureCelsius"),
         "wind_speed_kph": _weather_mean(weather, "windSpeedKph"),
+        "wind_speed_altitude_kph": _weather_altitude_wind(weather),
         "wind_gust_kph": _weather_mean(weather, "windGustKph"),
+        "precipitation_mm": _weather_mean(weather, "precipitationMm"),
         "precipitation_probability": _weather_mean(weather, "precipitationProbability"),
         "visibility_meters": _weather_mean(weather, "visibilityMeters"),
         "cloud_cover_percent": _weather_mean(weather, "cloudCoverPercent"),
@@ -125,8 +129,10 @@ def _segment_vector(flight_id: str | None, segment: list[TelemetryPoint]) -> dic
         "gps_satellites": mean(satellites) if satellites else None,
         "signal_strength": mean(signals) if signals else None,
         "wind_speed": _weather_mean(weather, "windSpeedKph"),
+        "wind_speed_altitude": _weather_altitude_wind(weather),
         "wind_gust": _weather_mean(weather, "windGustKph"),
         "temperature": _weather_mean(weather, "temperatureCelsius"),
+        "precipitation_mm": _weather_mean(weather, "precipitationMm"),
         "precipitation_probability": _weather_mean(weather, "precipitationProbability"),
     }
 
@@ -134,3 +140,11 @@ def _segment_vector(flight_id: str | None, segment: list[TelemetryPoint]) -> dic
 def _weather_mean(weather: list[dict[str, Any]], key: str) -> float | None:
     values = [item.get(key) for item in weather if item and item.get(key) is not None]
     return mean(values) if values else None
+
+
+def _weather_altitude_wind(weather: list[dict[str, Any]]) -> float | None:
+    for key in ("windSpeed100mKph", "windSpeed80mKph", "windSpeed120mKph"):
+        value = _weather_mean(weather, key)
+        if value is not None:
+            return value
+    return _weather_mean(weather, "windSpeedKph")

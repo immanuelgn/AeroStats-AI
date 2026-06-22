@@ -52,12 +52,22 @@ export type FlightEvent = {
 export type WeatherSnapshot = {
   timestamp: string;
   temperatureCelsius?: number;
+  relativeHumidityPercent?: number;
+  surfacePressureHpa?: number;
   windSpeedKph?: number;
+  windSpeed80mKph?: number;
+  windSpeed100mKph?: number;
+  windSpeed120mKph?: number;
   windGustKph?: number;
   windDirectionDegrees?: number;
+  windDirection80mDegrees?: number;
+  windDirection100mDegrees?: number;
+  windDirection120mDegrees?: number;
+  precipitationMm?: number;
   precipitationProbability?: number;
   cloudCoverPercent?: number;
   visibilityMeters?: number;
+  weatherCode?: number;
 };
 
 export type WeatherWindow = WeatherSnapshot & {

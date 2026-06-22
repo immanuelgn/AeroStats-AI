@@ -34,7 +34,7 @@ flowchart LR
   API --> P["Parse + normalize"]
   P --> DB["Supabase Postgres + Storage"]
   DB --> FE["Feature engineering"]
-  FE --> ML["scikit-learn training + validation"]
+  FE --> ML["ML training<br/>+ validation"]
   API --> W["Open-Meteo weather"]
   ML --> F
   W --> F

@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from typing import Any
-from fastapi import Depends, FastAPI, File, HTTPException, Query, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from .analytics import derive_flight_metrics
 from .config import Settings, get_settings
 from .features import build_segment_vectors, extract_flight_feature_vector
 from .ml import ARTIFACTS, build_datasets, detect_anomalies, predict_battery, predict_risk, rank_flight_windows, train_all_models, train_anomaly_model, train_battery_model, train_risk_model
 from .models import PredictionRequest, TrainRequest
-from .parsers import parse_dji_flightrecords_zip, parse_uploaded_flight_file
+from .parsers import parse_dji_flightrecords_zip, parse_flight_json, parse_uploaded_flight_file
 from .repository import Repository
 from .security import enforce_rate_limit, validate_file_size, validate_upload_file
 from .weather import get_forecast_windows, get_historical_weather_for_flight, get_weather_provider_status, join_weather_to_telemetry, summarize_weather_impact
@@ -73,11 +73,24 @@ def model_status() -> dict[str, Any]:
 
 
 @app.post("/upload/flight")
-async def upload_flight(request: Request, file: UploadFile = File(...), app_settings: Settings = Depends(guard)) -> dict[str, Any]:
+async def upload_flight(
+    request: Request,
+    file: UploadFile = File(...),
+    normalizedTelemetry: str | None = Form(default=None),
+    app_settings: Settings = Depends(guard),
+) -> dict[str, Any]:
     extension = validate_upload_file(file, app_settings)
     content = await file.read()
     validate_file_size(content, app_settings)
-    result = parse_uploaded_flight_file(file.filename or "upload", content)
+    if normalizedTelemetry:
+        normalized_content = normalizedTelemetry.encode("utf-8")
+        validate_file_size(normalized_content, app_settings)
+        result = parse_flight_json(file.filename or "upload", normalizedTelemetry)
+        for diagnostic in result.diagnostics:
+            diagnostic.parserName = "dji-log-parser-js"
+            diagnostic.warnings.append("DJI source decoded locally in the browser; original source file retained privately.")
+    else:
+        result = parse_uploaded_flight_file(file.filename or "upload", content)
     raw_path = repo.save_raw_file(file.filename or "upload", content) if result.flights else None
     persisted = []
     for flight in result.flights:

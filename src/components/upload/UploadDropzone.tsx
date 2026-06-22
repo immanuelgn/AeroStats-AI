@@ -34,7 +34,7 @@ export function UploadDropzone({ onResults }: { onResults: (results: ParserResul
       <UploadCloud className="h-10 w-10 text-[#0066cc]" />
       <h2 className="mt-4 text-xl font-semibold text-[#1d1d1f]">{importing ? "Parsing flight telemetry" : "Choose my flight log"}</h2>
       <p className="mt-2 max-w-xl text-sm leading-6 text-[#6e6e73]">
-        CSV and JSON work today. DJI Fly TXT and FlightRecords ZIP files can be selected, and full decoding will be finalized against an original iPhone flight export.
+        Upload CSV, JSON, or a DJI Fly FlightRecord TXT file. Supported DJI logs are decoded locally before normalized telemetry and the original source file are stored privately.
       </p>
       <input type="file" accept=".csv,.json,.txt,.zip" multiple className="sr-only" onChange={(event) => void handle(event.target.files)} />
       <span className="mt-5 rounded-full bg-[#0071e3] px-5 py-2.5 text-sm font-medium text-white shadow-sm">{importing ? "Processing" : "Choose file"}</span>

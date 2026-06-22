@@ -69,13 +69,13 @@ AeroStats AI provides decision-support estimates only. It does not guarantee fli
 
 ## DJI Flight Log Support
 
-CSV and JSON telemetry are supported today. DJI Fly TXT and FlightRecords ZIP decoding will be finalized and tested against an original iPhone DJI Fly export after the first flight.
+CSV and JSON telemetry are supported. DJI Fly FlightRecord TXT logs through version 12 are decoded locally with `dji-log-parser-js`, normalized for AeroStats AI, and sent to the backend together with the original source file for private storage. Newer encrypted DJI logs require DJI OpenAPI keychain support before they can be imported.
 
 DJI and DJI Fly are trademarks of DJI. AeroStats AI is independent and is not affiliated with or endorsed by DJI.
 
 ## Future Improvements
 
-- Verified DJI Fly iPhone log decoding
+- Encrypted DJI v13+ keychain decoding
 - Durable model-artifact rehydration after backend cold starts
 - Expanded model evaluation and calibration views
 - Coordinate anonymization controls for portfolio screenshots
@@ -85,3 +85,5 @@ DJI and DJI Fly are trademarks of DJI. AeroStats AI is independent and is not af
 Copyright (c) 2026 Immanuel Gnanaseelan. All rights reserved.
 
 This repository is source-available for portfolio review only. No permission is granted to copy, modify, distribute, sublicense, or reuse the code, design, branding, or assets without prior written permission.
+
+Third-party dependencies remain subject to their respective licenses. DJI log decoding uses the MIT-licensed [`dji-log-parser`](https://github.com/lvauvillier/dji-log-parser) project.

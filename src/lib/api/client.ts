@@ -31,9 +31,10 @@ export async function getModelStatus(): Promise<BackendModelStatus> {
   return apiFetch<BackendModelStatus>("/model/status");
 }
 
-export async function uploadFlightToBackend(file: File): Promise<{ parser: ParserResult; flights: FlightRecord[] }> {
+export async function uploadFlightToBackend(file: File, normalizedTelemetry?: FlightRecord["telemetry"]): Promise<{ parser: ParserResult; flights: FlightRecord[] }> {
   const form = new FormData();
   form.append("file", file);
+  if (normalizedTelemetry?.length) form.append("normalizedTelemetry", JSON.stringify(normalizedTelemetry));
   const response = await apiFetch<{ parser: Record<string, unknown>; flights: Array<Record<string, unknown>> }>("/upload/flight", { method: "POST", body: form });
   const flights = ((response.parser.flights as Array<Record<string, unknown>> | undefined) ?? response.flights ?? []).map(normalizeBackendFlight);
   const parser = normalizeBackendParser(response.parser, flights);

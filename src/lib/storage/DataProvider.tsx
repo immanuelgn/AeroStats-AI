@@ -49,7 +49,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         try {
           for (const file of files) {
             if (isBackendConfigured()) {
-              const response = await uploadFlightToBackend(file);
+              const localResult = file.name.toLowerCase().startsWith("djiflightrecord_") ? await parseUploadedFlightFile(file) : undefined;
+              if (localResult && !localResult.flights.length) {
+                results.push(localResult);
+                continue;
+              }
+              const normalizedTelemetry = localResult?.flights.flatMap((flight) => flight.telemetry);
+              const response = await uploadFlightToBackend(file, normalizedTelemetry);
               results.push(response.parser);
             } else {
               const result = await parseUploadedFlightFile(file);

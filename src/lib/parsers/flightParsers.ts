@@ -36,6 +36,7 @@ export async function parseUploadedFlightFile(file: File): Promise<ParserResult>
 
   try {
     if (fileType === "zip") return parseDjiFlightRecordsZip(file);
+    if (fileType === "txt" && file.name.toLowerCase().startsWith("djiflightrecord_")) return parseDjiFlightRecord(file);
     const text = await file.text();
     if (fileType === "json") return parseFlightJson(text, file.name);
     if (fileType === "csv" || fileType === "txt") return parseFlightCsv(text, file.name);
@@ -81,12 +82,83 @@ export function parseFlightJson(text: string, sourceFileName: string): ParserRes
   return buildParserResult(candidateRows, sourceFileName);
 }
 
-export function parseDjiFlightRecord(): ParserResult {
-  return emptyResult(
-    "partially parsed",
-    "DJI Fly FlightRecord parsing is scaffolded. Add DJI field extraction before importing this format as normalized telemetry.",
-    [{ code: "dji-parser-planned", message: "DJI FlightRecords are detected but not interpreted yet.", severity: "info" }],
-  );
+export async function parseDjiFlightRecord(file: File): Promise<ParserResult> {
+  const { DJILog } = await import("dji-log-parser-js");
+  const parser = new DJILog(new Uint8Array(await file.arrayBuffer()));
+
+  try {
+    if (parser.version >= 13) {
+      return emptyResult(
+        "partially parsed",
+        "This newer encrypted DJI flight record requires a server-side DJI OpenAPI keychain before it can be decoded.",
+        [{ code: "dji-encrypted-log", message: `DJI log version ${parser.version} requires keychain decryption.`, severity: "warning" }],
+      );
+    }
+
+    const details = parser.details;
+    const frames = parser.frames();
+    const rows = frames
+      .filter((frame) => {
+        const { latitude, longitude, isMotorOn, isOnGround } = frame.osd;
+        return (
+          isMotorOn &&
+          !isOnGround &&
+          Number.isFinite(latitude) &&
+          Number.isFinite(longitude) &&
+          Math.abs(latitude) <= 90 &&
+          Math.abs(longitude) <= 180 &&
+          !(latitude === 0 && longitude === 0) &&
+          Number.isFinite(Date.parse(frame.custom.dateTime))
+        );
+      })
+      .map((frame) => {
+        const battery = inRange(frame.battery.chargeLevel, 1, 100);
+        const gpsSatellites = inRange(frame.osd.gpsNum, 0, 100);
+        const signalStrength = averageDefined([
+          inRange(frame.rc.downlinkSignal, 0, 100),
+          inRange(frame.rc.uplinkSignal, 0, 100),
+        ]);
+        const homeDistance =
+          validCoordinate(frame.home.latitude, frame.home.longitude)
+            ? haversineMeters(frame.osd.latitude, frame.osd.longitude, frame.home.latitude, frame.home.longitude)
+            : undefined;
+        return {
+          timestamp: frame.custom.dateTime,
+          latitude: frame.osd.latitude,
+          longitude: frame.osd.longitude,
+          altitudeMeters: finiteNumber(frame.osd.height),
+          speedMps: Math.hypot(frame.osd.xSpeed, frame.osd.ySpeed),
+          batteryPercent: battery,
+          distanceFromHomeMeters: homeDistance,
+          headingDegrees: normalizeHeading(frame.osd.yaw),
+          verticalSpeedMps: finiteNumber(frame.osd.zSpeed),
+          gpsSatellites,
+          signalStrengthPercent: signalStrength,
+          eventType: frame.app.warn || frame.app.tip || undefined,
+        };
+      });
+
+    if (!rows.length) {
+      return emptyResult(
+        "partially parsed",
+        "The DJI record decoded successfully but does not contain an airborne GPS track. It cannot support mapping, weather joins, or location-based ML.",
+        [{ code: "dji-no-airborne-gps", message: "No valid airborne GPS telemetry was found in this record.", severity: "warning" }],
+      );
+    }
+
+    const result = buildParserResult(rows, file.name, details.aircraftName || stripExtension(file.name));
+    const droppedFrames = frames.length - rows.length;
+    result.warnings.push({
+      code: "dji-decoded",
+      message: `Decoded DJI log version ${parser.version}. Kept ${rows.length} airborne GPS frames and excluded ${droppedFrames} ground or incomplete frames.`,
+      severity: "info",
+    });
+    result.status = result.missingFields.length ? "partially parsed" : "success";
+    result.nextRecommendedAction = "Open the flight replay, join historical weather, then add more flights before training the ML models.";
+    return result;
+  } finally {
+    parser.free();
+  }
 }
 
 export function parseDjiFlightRecordsZip(file?: File): ParserResult {
@@ -159,8 +231,8 @@ export function splitIntoFlights(telemetry: TelemetryPoint[]) {
 
 export { deriveFlightMetrics, generateFlightEvents, generateFlightTags };
 
-function buildParserResult(rows: unknown[], sourceFileName: string): ParserResult {
-  const flights = createFlightsFromRows(rows, sourceFileName);
+function buildParserResult(rows: unknown[], sourceFileName: string, baseName?: string): ParserResult {
+  const flights = createFlightsFromRows(rows, sourceFileName, baseName);
   const warnings: ParserWarning[] = [];
   if (!flights.length) {
     return emptyResult(
@@ -266,4 +338,42 @@ function splitCsvLine(line: string) {
   }
   cells.push(current.trim());
   return cells.map((cell) => cell.replace(/^"|"$/g, ""));
+}
+
+function finiteNumber(value: number) {
+  return Number.isFinite(value) ? value : undefined;
+}
+
+function inRange(value: number | undefined, min: number, max: number) {
+  return value !== undefined && Number.isFinite(value) && value >= min && value <= max ? value : undefined;
+}
+
+function averageDefined(values: Array<number | undefined>) {
+  const defined = values.filter((value): value is number => value !== undefined);
+  return defined.length ? defined.reduce((sum, value) => sum + value, 0) / defined.length : undefined;
+}
+
+function validCoordinate(latitude: number, longitude: number) {
+  return (
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    Math.abs(latitude) <= 90 &&
+    Math.abs(longitude) <= 180 &&
+    !(latitude === 0 && longitude === 0)
+  );
+}
+
+function haversineMeters(latitude: number, longitude: number, homeLatitude: number, homeLongitude: number) {
+  const earthRadiusMeters = 6_371_000;
+  const toRadians = (value: number) => (value * Math.PI) / 180;
+  const latDelta = toRadians(homeLatitude - latitude);
+  const lonDelta = toRadians(homeLongitude - longitude);
+  const a =
+    Math.sin(latDelta / 2) ** 2 +
+    Math.cos(toRadians(latitude)) * Math.cos(toRadians(homeLatitude)) * Math.sin(lonDelta / 2) ** 2;
+  return earthRadiusMeters * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function normalizeHeading(value: number) {
+  return Number.isFinite(value) ? ((value % 360) + 360) % 360 : undefined;
 }

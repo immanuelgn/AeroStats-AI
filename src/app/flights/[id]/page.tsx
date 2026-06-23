@@ -123,7 +123,7 @@ export default function FlightDetailPage() {
         <div className="space-y-4">
           <div className="relative">
             <FlightMap telemetry={flight.telemetry} currentIndex={currentIndex} events={flight.events} />
-            <div className="pointer-events-none absolute bottom-4 right-4 top-4 z-[900] hidden w-[min(360px,calc(100%-2rem))] md:block">
+            <div className="pointer-events-none absolute bottom-3 right-3 top-3 z-[900] hidden w-[min(324px,calc(100%-1.5rem))] md:block">
               <div className="pointer-events-auto h-full">
                 <TelemetryPanel point={flight.telemetry[currentIndex]} previousPoint={flight.telemetry[currentIndex - 1]} event={currentEvent} variant="overlay" />
               </div>

@@ -101,9 +101,19 @@ export default function FlightDetailPage() {
         <StatCard label="Risk estimate" value={flight.metrics.riskScore !== undefined ? `${flight.metrics.riskScore}/100` : "Unavailable"} />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_360px]">
+      <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
         <div className="space-y-4">
-          <FlightMap telemetry={flight.telemetry} currentIndex={currentIndex} events={flight.events} />
+          <div className="relative">
+            <FlightMap telemetry={flight.telemetry} currentIndex={currentIndex} events={flight.events} />
+            <div className="pointer-events-none absolute bottom-4 right-4 top-4 z-[900] hidden w-[min(360px,calc(100%-2rem))] md:block">
+              <div className="pointer-events-auto h-full">
+                <TelemetryPanel point={flight.telemetry[currentIndex]} previousPoint={flight.telemetry[currentIndex - 1]} event={currentEvent} variant="overlay" />
+              </div>
+            </div>
+          </div>
+          <div className="md:hidden">
+            <TelemetryPanel point={flight.telemetry[currentIndex]} previousPoint={flight.telemetry[currentIndex - 1]} event={currentEvent} />
+          </div>
           <FlightReplayControls
             playing={playing}
             currentIndex={currentIndex}
@@ -115,7 +125,6 @@ export default function FlightDetailPage() {
           />
         </div>
         <div className="space-y-4">
-          <TelemetryPanel point={flight.telemetry[currentIndex]} previousPoint={flight.telemetry[currentIndex - 1]} event={currentEvent} />
           <EventTimeline events={flight.events} onJump={setCurrentIndex} />
         </div>
       </div>

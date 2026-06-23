@@ -16,6 +16,18 @@ export function isUnreliableAltitudePoint(point?: TelemetryPoint, previous?: Tel
   return (physicallyImpossibleLow || sharpAltitudeDrop) && (gpsLost || verticalSpike || point.altitudeMeters < -50);
 }
 
+export function isReliablePositionPoint(point?: TelemetryPoint) {
+  if (!point) return false;
+  if (!Number.isFinite(point.latitude) || !Number.isFinite(point.longitude)) return false;
+  if (point.gpsSatellites !== undefined && point.gpsSatellites <= 3) return false;
+  return true;
+}
+
+export function isReliableAltitudePoint(point?: TelemetryPoint, previous?: TelemetryPoint) {
+  if (!point || point.altitudeMeters === undefined) return false;
+  return !isUnreliableAltitudePoint(point, previous);
+}
+
 export function getTelemetryQualityWarning(point?: TelemetryPoint, previous?: TelemetryPoint) {
   if (!point) return undefined;
   if (isUnreliableAltitudePoint(point, previous)) {

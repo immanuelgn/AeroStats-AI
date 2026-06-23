@@ -1,4 +1,5 @@
 import type { FlightMetrics, TelemetryPoint, WeatherWindow, FlyabilityRecommendation } from "@/types";
+import { isReliableAltitudePoint, isReliablePositionPoint } from "@/lib/data/quality";
 
 const EARTH_RADIUS_METERS = 6371000;
 
@@ -40,7 +41,9 @@ export function haversineDistance(a: TelemetryPoint, b: TelemetryPoint) {
 
 export function calculateTotalDistance(telemetry: TelemetryPoint[]) {
   return telemetry.slice(1).reduce((sum, point, index) => {
-    return sum + haversineDistance(telemetry[index], point);
+    const previous = telemetry[index];
+    if (!isReliablePositionPoint(previous) || !isReliablePositionPoint(point)) return sum;
+    return sum + haversineDistance(previous, point);
   }, 0);
 }
 
@@ -71,13 +74,17 @@ export function calculateMaxSpeed(telemetry: TelemetryPoint[]) {
 }
 
 export function calculateMaxAltitude(telemetry: TelemetryPoint[]) {
-  const altitudes = telemetry.map((point) => point.altitudeMeters).filter((value): value is number => value !== undefined);
+  const altitudes = telemetry
+    .filter((point, index) => isReliableAltitudePoint(point, telemetry[index - 1]))
+    .map((point) => point.altitudeMeters)
+    .filter((value): value is number => value !== undefined);
   return altitudes.length ? Math.max(...altitudes) : undefined;
 }
 
 export function calculateAltitudeGain(telemetry: TelemetryPoint[]) {
   let gain = 0;
   for (let index = 1; index < telemetry.length; index += 1) {
+    if (!isReliableAltitudePoint(telemetry[index - 1], telemetry[index - 2]) || !isReliableAltitudePoint(telemetry[index], telemetry[index - 1])) continue;
     const previous = telemetry[index - 1].altitudeMeters;
     const current = telemetry[index].altitudeMeters;
     if (previous !== undefined && current !== undefined && current > previous) gain += current - previous;
@@ -103,7 +110,9 @@ export function calculateBatteryDrainPer100Meters(batteryUsed?: number, totalDis
 
 export function calculateRouteEfficiency(telemetry: TelemetryPoint[], totalDistance?: number) {
   if (telemetry.length < 2 || !totalDistance) return undefined;
-  const directDistance = haversineDistance(telemetry[0], telemetry[telemetry.length - 1]);
+  const reliableTelemetry = telemetry.filter(isReliablePositionPoint);
+  if (reliableTelemetry.length < 2) return undefined;
+  const directDistance = haversineDistance(reliableTelemetry[0], reliableTelemetry[reliableTelemetry.length - 1]);
   if (totalDistance < 1) return undefined;
   return clamp((directDistance / totalDistance) * 100);
 }
@@ -117,7 +126,7 @@ export function calculateAggressiveMovementScore(telemetry: TelemetryPoint[]) {
 }
 
 export function calculateReturnMargin(telemetry: TelemetryPoint[]) {
-  const distance = telemetry[telemetry.length - 1]?.distanceFromHomeMeters;
+  const distance = [...telemetry].reverse().find(isReliablePositionPoint)?.distanceFromHomeMeters;
   const battery = telemetry[telemetry.length - 1]?.batteryPercent;
   if (distance === undefined || battery === undefined) return undefined;
   return clamp(battery - distance / 120);

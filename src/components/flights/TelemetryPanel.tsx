@@ -1,9 +1,10 @@
 import type { FlightEvent, TelemetryPoint } from "@/types";
 import { formatDistance } from "@/lib/analytics/metrics";
-import { getTelemetryQualityWarning } from "@/lib/data/quality";
+import { getTelemetryQualityWarning, isUnreliableAltitudePoint } from "@/lib/data/quality";
 
 export function TelemetryPanel({ point, previousPoint, event }: { point?: TelemetryPoint; previousPoint?: TelemetryPoint; event?: FlightEvent }) {
   const qualityWarning = getTelemetryQualityWarning(point, previousPoint);
+  const telemetryEventLabel = isUnreliableAltitudePoint(point, previousPoint) ? "Telemetry anomaly" : undefined;
   const rows = [
     ["Timestamp", point?.timestamp ? new Date(point.timestamp).toLocaleString() : "Unavailable"],
     ["Altitude", point?.altitudeMeters !== undefined ? `${point.altitudeMeters.toFixed(1)} m` : "Unavailable"],
@@ -14,7 +15,7 @@ export function TelemetryPanel({ point, previousPoint, event }: { point?: Teleme
     ["GPS satellites", point?.gpsSatellites !== undefined ? String(point.gpsSatellites) : "Unavailable"],
     ["Signal", point?.signalStrengthPercent !== undefined ? `${point.signalStrengthPercent.toFixed(0)}%` : "Unavailable"],
     ["Wind estimate", point?.weather?.windSpeedKph !== undefined ? `${point.weather.windSpeedKph.toFixed(0)} kph` : "Join weather first"],
-    ["Event", event?.label ?? point?.eventType ?? "None"],
+    ["Event", event?.label ?? point?.eventType ?? telemetryEventLabel ?? "None"],
   ];
   return (
     <div className="rounded-lg border border-black/[0.08] bg-[#ffffff] p-5">

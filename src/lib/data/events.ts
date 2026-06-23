@@ -7,11 +7,11 @@ export function generateFlightEvents(telemetry: TelemetryPoint[]): FlightEvent[]
     {
       id: "takeoff",
       type: "takeoff",
-      label: "Takeoff",
+      label: "Log start",
       timestamp: telemetry[0].timestamp,
       telemetryIndex: 0,
       severity: "info",
-      description: "First telemetry point in the imported flight.",
+      description: "First usable telemetry point in the imported flight. DJI exports may not include an exact liftoff marker.",
     },
   ];
 

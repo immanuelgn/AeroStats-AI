@@ -42,7 +42,7 @@ export default function DashboardPage() {
           <p className="text-sm font-medium text-[#0066cc]">Fetching saved flights</p>
           <h2 className="mt-2 text-2xl font-semibold text-[#1d1d1f]">The backend is loading the portfolio dataset.</h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#6e6e73]">
-            This can take a little longer on Render free tier after the service sleeps. The flights are stored in Supabase and should appear automatically.
+            This can take up to a minute after the service sleeps. If the flights still do not appear, refresh once.
           </p>
         </section>
       ) : !hasData ? (

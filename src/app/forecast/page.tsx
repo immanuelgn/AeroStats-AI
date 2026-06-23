@@ -36,7 +36,7 @@ export default function ForecastPage() {
     return (
       <div className="rounded-lg border border-[#d2d2d7] bg-[#f5f5f7] p-8 text-center">
         <h1 className="text-xl font-semibold text-[#1d1d1f]">Loading my flight history...</h1>
-        <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#6e6e73]">AeroStats AI is syncing saved flights from the backend before building a forecast location.</p>
+        <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#6e6e73]">AeroStats AI is syncing saved flights from the backend. If they still do not appear after about a minute, refresh once.</p>
       </div>
     );
   }

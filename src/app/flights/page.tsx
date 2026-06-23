@@ -41,7 +41,7 @@ export default function FlightsPage() {
           <p className="text-sm font-medium text-[#0066cc]">Syncing saved flight records</p>
           <h2 className="mt-2 text-2xl font-semibold text-[#1d1d1f]">Loading the shared Supabase dataset.</h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#6e6e73]">
-            New browsers do not have my local cache yet, so AeroStats AI is pulling the stored flights from the backend.
+            New browsers pull the stored flights from the backend. If they still do not appear after about a minute, refresh once.
           </p>
         </section>
       ) : !flights.length ? (

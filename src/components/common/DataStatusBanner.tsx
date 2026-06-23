@@ -3,7 +3,7 @@ import Link from "next/link";
 export function DataStatusBanner({ hasData, loading = false }: { hasData: boolean; loading?: boolean }) {
   const title = loading ? "Loading the shared flight dataset." : hasData ? "My flight dataset is active" : "Add my first flight to begin the analysis.";
   const body = loading
-    ? "Render can take a moment to wake up. The saved flights are loading from the backend, not from this browser."
+    ? "The backend may take up to a minute to wake. If the flights still do not appear, refresh once."
     : "Replay, charts, weather context, and model validation unlock as supported telemetry is added.";
 
   return (

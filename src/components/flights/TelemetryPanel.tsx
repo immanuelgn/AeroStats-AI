@@ -1,9 +1,10 @@
 import type { FlightEvent, TelemetryPoint } from "@/types";
 import { formatDistance } from "@/lib/analytics/metrics";
-import { getTelemetryQualityWarning, isUnreliableAltitudePoint } from "@/lib/data/quality";
+import { getAltitudeReferenceNote, getTelemetryQualityWarning, isUnreliableAltitudePoint } from "@/lib/data/quality";
 
 export function TelemetryPanel({ point, previousPoint, event }: { point?: TelemetryPoint; previousPoint?: TelemetryPoint; event?: FlightEvent }) {
   const qualityWarning = getTelemetryQualityWarning(point, previousPoint);
+  const altitudeReferenceNote = getAltitudeReferenceNote(point, previousPoint);
   const telemetryEventLabel = isUnreliableAltitudePoint(point, previousPoint) ? "Telemetry anomaly" : undefined;
   const rows = [
     ["Timestamp", point?.timestamp ? new Date(point.timestamp).toLocaleString() : "Unavailable"],
@@ -32,6 +33,12 @@ export function TelemetryPanel({ point, previousPoint, event }: { point?: Teleme
         <div className="mt-4 rounded-md border border-[#f5c542]/50 bg-[#fff8e5] p-3 text-xs leading-5 text-[#6b4a00]">
           <span className="font-semibold">Telemetry quality warning: </span>
           {qualityWarning}
+        </div>
+      ) : null}
+      {altitudeReferenceNote ? (
+        <div className="mt-4 rounded-md border border-[#9ecbff]/60 bg-[#f5faff] p-3 text-xs leading-5 text-[#0057a8]">
+          <span className="font-semibold">Altitude reference note: </span>
+          {altitudeReferenceNote}
         </div>
       ) : null}
     </div>

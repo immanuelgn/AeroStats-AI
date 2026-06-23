@@ -38,3 +38,9 @@ export function getTelemetryQualityWarning(point?: TelemetryPoint, previous?: Te
   }
   return undefined;
 }
+
+export function getAltitudeReferenceNote(point?: TelemetryPoint, previous?: TelemetryPoint) {
+  if (!point || point.altitudeMeters === undefined || point.altitudeMeters >= 0) return undefined;
+  if (isUnreliableAltitudePoint(point, previous)) return undefined;
+  return "Altitude is below the takeoff/home reference here. Small negative values can happen in DJI logs from barometric drift, terrain changes, or relative-height calibration, so this is not treated as an ML anomaly by itself.";
+}

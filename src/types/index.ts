@@ -41,7 +41,8 @@ export type FlightEvent = {
     | "battery-warning"
     | "landing"
     | "low-signal"
-    | "wind-affected";
+    | "wind-affected"
+    | "telemetry-anomaly";
   label: string;
   timestamp: string;
   telemetryIndex: number;

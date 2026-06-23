@@ -1,4 +1,5 @@
 import type { FlightEvent, FlightRecord, TelemetryPoint } from "@/types";
+import { findFirstAltitudeAnomalyIndex } from "@/lib/data/quality";
 
 export function generateFlightEvents(telemetry: TelemetryPoint[]): FlightEvent[] {
   if (!telemetry.length) return [];
@@ -70,6 +71,19 @@ export function generateFlightEvents(telemetry: TelemetryPoint[]): FlightEvent[]
       telemetryIndex: lowSignalIndex,
       severity: "caution",
       description: "Signal or satellite count dipped below a stability threshold.",
+    });
+  }
+
+  const altitudeAnomalyIndex = findFirstAltitudeAnomalyIndex(telemetry);
+  if (altitudeAnomalyIndex >= 0) {
+    events.push({
+      id: "telemetry-anomaly",
+      type: "telemetry-anomaly",
+      label: "Telemetry anomaly",
+      timestamp: telemetry[altitudeAnomalyIndex].timestamp,
+      telemetryIndex: altitudeAnomalyIndex,
+      severity: "warning",
+      description: "Altitude and GPS became physically inconsistent here; treat this section as unreliable log data, not actual altitude.",
     });
   }
 

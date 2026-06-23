@@ -53,8 +53,10 @@ export default function FlightDetailPage() {
   const battery = predictBatteryUsage(features);
   const risk = classifyFlightRisk(features);
   const anomalies = detectFlightAnomalies(flight.telemetry);
+  const hasAltitudeQualityAnomaly = anomalies.some((anomaly) => anomaly.id.startsWith("altitude-quality-"));
   const displayName = flightDisplayName(flight, flights);
   const insights = [
+    hasAltitudeQualityAnomaly ? "A late-flight altitude/GPS anomaly was detected, so negative altitude values are treated as unreliable log data rather than real altitude." : undefined,
     flight.featureAvailability.speedChart && flight.featureAvailability.batteryAnalytics ? "Battery drain increased during higher-speed segments when speed variation was present." : undefined,
     flight.metrics.hoverRatio !== undefined && flight.metrics.hoverRatio > 0.25 ? "Hover-heavy section detected from low-speed telemetry points." : undefined,
     flight.metrics.routeEfficiency !== undefined && flight.metrics.routeEfficiency < 45 ? "Route efficiency was lower because the flight path included repeated or indirect movement." : undefined,
@@ -113,7 +115,7 @@ export default function FlightDetailPage() {
           />
         </div>
         <div className="space-y-4">
-          <TelemetryPanel point={flight.telemetry[currentIndex]} event={currentEvent} />
+          <TelemetryPanel point={flight.telemetry[currentIndex]} previousPoint={flight.telemetry[currentIndex - 1]} event={currentEvent} />
           <EventTimeline events={flight.events} onJump={setCurrentIndex} />
         </div>
       </div>

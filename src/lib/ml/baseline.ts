@@ -9,6 +9,7 @@ import type {
   WeatherWindow,
 } from "@/types";
 import { calculateFlyabilityScore, clamp, recommendFlightWindow } from "@/lib/analytics/metrics";
+import { isUnreliableAltitudePoint } from "@/lib/data/quality";
 
 type FlightFeatures = {
   durationMinutes?: number;
@@ -102,6 +103,7 @@ export function classifyFlightRisk(features: FlightFeatures): RiskPrediction {
 
 export function detectFlightAnomalies(telemetry: TelemetryPoint[]): Anomaly[] {
   const anomalies: Anomaly[] = [];
+  let altitudeAnomalyAdded = false;
   telemetry.forEach((point, index) => {
     const previous = telemetry[index - 1];
     if (previous?.batteryPercent !== undefined && point.batteryPercent !== undefined && previous.batteryPercent - point.batteryPercent > 8) {
@@ -129,6 +131,16 @@ export function detectFlightAnomalies(telemetry: TelemetryPoint[]): Anomaly[] {
         severity: "info",
         timestamp: point.timestamp,
         explanation: "Speed is high for small-drone battery-efficiency planning.",
+      });
+    }
+    if (!altitudeAnomalyAdded && isUnreliableAltitudePoint(point, previous)) {
+      altitudeAnomalyAdded = true;
+      anomalies.push({
+        id: `altitude-quality-${index}`,
+        label: "Unreliable altitude segment",
+        severity: "warning",
+        timestamp: point.timestamp,
+        explanation: "Altitude drops far below a physically plausible value while GPS or vertical motion is unstable. This is treated as corrupted or crash-adjacent telemetry, not real altitude.",
       });
     }
   });

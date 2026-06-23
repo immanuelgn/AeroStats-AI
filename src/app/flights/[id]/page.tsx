@@ -105,8 +105,8 @@ export default function FlightDetailPage() {
           </button>
           <p className="max-w-[310px] text-xs leading-5 text-[#86868b] lg:text-right">
             {flight.weatherJoined
-              ? "Weather is already attached. Click again only if you want to refresh the wind, temperature, and visibility context."
-              : "Click once to add wind, temperature, and visibility from the flight time to this whole replay."}
+              ? "Weather is already attached. Click again only if you want to refresh wind, temperature, clouds, and rain context."
+              : "Click once to add wind, temperature, clouds, and rain from the flight time to this whole replay."}
           </p>
         </div>
       </div>

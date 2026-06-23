@@ -29,6 +29,8 @@ export function TelemetryPanel({
     ["Signal", point?.signalStrengthPercent !== undefined ? `${point.signalStrengthPercent.toFixed(0)}%` : "Unavailable"],
     ["Wind estimate", point?.weather?.windSpeedKph !== undefined ? `${point.weather.windSpeedKph.toFixed(0)} kph` : weatherMissingLabel],
     ["Temperature", point?.weather?.temperatureCelsius !== undefined ? `${point.weather.temperatureCelsius.toFixed(1)} C` : weatherMissingLabel],
+    ["Cloud cover", point?.weather?.cloudCoverPercent !== undefined ? `${point.weather.cloudCoverPercent.toFixed(0)}%` : weatherMissingLabel],
+    ["Precipitation", point?.weather?.precipitationMm !== undefined ? `${point.weather.precipitationMm.toFixed(1)} mm` : weatherMissingLabel],
     ["Visibility", point?.weather?.visibilityMeters !== undefined ? formatDistance(point.weather.visibilityMeters) : weatherMissingLabel],
     ["Event", event?.label ?? point?.eventType ?? telemetryEventLabel ?? "None"],
   ];

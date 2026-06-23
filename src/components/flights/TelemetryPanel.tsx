@@ -27,6 +27,8 @@ export function TelemetryPanel({
     ["GPS satellites", point?.gpsSatellites !== undefined ? String(point.gpsSatellites) : "Unavailable"],
     ["Signal", point?.signalStrengthPercent !== undefined ? `${point.signalStrengthPercent.toFixed(0)}%` : "Unavailable"],
     ["Wind estimate", point?.weather?.windSpeedKph !== undefined ? `${point.weather.windSpeedKph.toFixed(0)} kph` : "Join weather first"],
+    ["Temperature", point?.weather?.temperatureCelsius !== undefined ? `${point.weather.temperatureCelsius.toFixed(1)} C` : "Join weather first"],
+    ["Visibility", point?.weather?.visibilityMeters !== undefined ? formatDistance(point.weather.visibilityMeters) : "Join weather first"],
     ["Event", event?.label ?? point?.eventType ?? telemetryEventLabel ?? "None"],
   ];
   return (

@@ -25,6 +25,7 @@ export default function FlightDetailPage() {
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(2);
   const [weatherMessage, setWeatherMessage] = useState("");
+  const [joiningWeather, setJoiningWeather] = useState(false);
 
   useEffect(() => {
     if (!playing || !flight) return;
@@ -65,10 +66,12 @@ export default function FlightDetailPage() {
   ].filter(Boolean) as string[];
 
   async function joinWeather() {
+    if (joiningWeather) return;
     if (!flight || weatherMode === "disabled") {
       setWeatherMessage("Enable mock or Open-Meteo weather mode in settings before joining weather.");
       return;
     }
+    setJoiningWeather(true);
     try {
       const weather = await getHistoricalWeatherForFlight(flight, weatherMode);
       const telemetry = joinWeatherToTelemetry(flight.telemetry, weather);
@@ -78,6 +81,8 @@ export default function FlightDetailPage() {
       setWeatherMessage(weather.length ? "Weather joined to telemetry by nearest timestamp." : "Weather provider returned no usable weather rows.");
     } catch (error) {
       setWeatherMessage(error instanceof Error ? error.message : "Weather fetch failed.");
+    } finally {
+      setJoiningWeather(false);
     }
   }
 
@@ -91,8 +96,18 @@ export default function FlightDetailPage() {
           <p className="mt-2 text-sm text-[#6e6e73]">Replay, event markers, telemetry, charts, and baseline insights are generated from this uploaded flight only.</p>
         </div>
         <div className="flex flex-col items-start gap-1 lg:items-end">
-          <button onClick={() => void joinWeather()} className="rounded-full border border-[#0071e3] px-5 py-2.5 text-sm font-medium text-[#0066cc] hover:bg-[#0071e3]/10">Join weather</button>
-          <p className="max-w-[260px] text-xs leading-5 text-[#86868b] lg:text-right">Adds historical wind and weather to the full flight.</p>
+          <button
+            onClick={() => void joinWeather()}
+            disabled={joiningWeather}
+            className="rounded-full border border-[#0071e3] px-5 py-2.5 text-sm font-medium text-[#0066cc] hover:bg-[#0071e3]/10 disabled:cursor-not-allowed disabled:opacity-55"
+          >
+            {joiningWeather ? "Joining weather..." : flight.weatherJoined ? "Refresh weather" : "Join weather"}
+          </button>
+          <p className="max-w-[310px] text-xs leading-5 text-[#86868b] lg:text-right">
+            {flight.weatherJoined
+              ? "Weather is already attached. Click again only if you want to refresh the wind, temperature, and visibility context."
+              : "Click once to add wind, temperature, and visibility from the flight time to this whole replay."}
+          </p>
         </div>
       </div>
       {weatherMessage ? <p className="rounded-lg border border-[#d2d2d7] bg-[#f5f5f7] p-3 text-sm text-[#6e6e73]">{weatherMessage}</p> : null}

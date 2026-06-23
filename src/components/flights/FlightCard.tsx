@@ -4,12 +4,13 @@ import { formatDistance, formatDuration } from "@/lib/analytics/metrics";
 import { RiskBadge } from "@/components/flights/RiskBadge";
 import { flightDisplayName } from "@/lib/data/summaries";
 
-export function FlightCard({ flight }: { flight: FlightRecord }) {
+export function FlightCard({ flight, allFlights }: { flight: FlightRecord; allFlights?: FlightRecord[] }) {
   return (
     <Link href={`/flights/${flight.id}`} className="block rounded-lg border border-black/[0.08] bg-[#ffffff] p-5 hover:border-[#0071e3]/40 hover:bg-[#f5f5f7]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="font-semibold text-[#1d1d1f]">{flightDisplayName(flight)}</p>
+          <p className="font-semibold text-[#1d1d1f]">{flightDisplayName(flight, allFlights)}</p>
+          <p className="mt-1 text-xs text-[#86868b]">{flight.sourceFileName}</p>
           <p className="mt-1 text-sm text-[#6e6e73]">{flight.metadata.startTime ? new Date(flight.metadata.startTime).toLocaleString() : "Date unavailable"}</p>
           <p className="mt-1 text-xs text-[#86868b]">{flight.metadata.locationLabel ?? "Location not detected"}</p>
         </div>

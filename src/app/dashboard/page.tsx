@@ -8,14 +8,15 @@ import { EmptyState } from "@/components/empty-states/EmptyState";
 import { PipelinePreview } from "@/components/dashboard/PipelinePreview";
 import { FlightCard } from "@/components/flights/FlightCard";
 import { useUploadedData } from "@/lib/storage/DataProvider";
-import { dashboardMetrics, flightDisplayName } from "@/lib/data/summaries";
+import { chronologicalFlights, dashboardMetrics, flightDisplayName } from "@/lib/data/summaries";
 import { formatDistance } from "@/lib/analytics/metrics";
 
 export default function DashboardPage() {
   const { flights, weatherMode, backendSyncing } = useUploadedData();
   const hasData = flights.length > 0;
   const metrics = dashboardMetrics(flights);
-  const comparison = flights.map((flight, index) => ({
+  const orderedFlights = chronologicalFlights(flights);
+  const comparison = orderedFlights.map((flight, index) => ({
     name: `F${index + 1}`,
     fullName: flightDisplayName(flight, index),
     distance: Math.round(flight.metrics.totalDistanceMeters ?? 0),
@@ -130,7 +131,7 @@ export default function DashboardPage() {
               {bestFlightIndex >= 0 ? <p className="hidden text-xs text-[#86868b] sm:block">Best distance efficiency: Flight {bestFlightIndex + 1}</p> : null}
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
-              {flights.slice(-4).reverse().map((flight) => <FlightCard key={flight.id} flight={flight} />)}
+              {flights.slice(0, 4).map((flight) => <FlightCard key={flight.id} flight={flight} allFlights={flights} />)}
             </div>
           </section>
         </>

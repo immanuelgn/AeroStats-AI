@@ -9,7 +9,7 @@ import type { WeatherWindow } from "@/types";
 import { ChartCard } from "@/components/charts/ChartCard";
 import { EmptyState } from "@/components/empty-states/EmptyState";
 import { useUploadedData } from "@/lib/storage/DataProvider";
-import { latestFlight } from "@/lib/data/summaries";
+import { flightDisplayName, latestFlight } from "@/lib/data/summaries";
 import { getForecastWindows, getWeatherProviderStatus } from "@/lib/weather/providers";
 import { buildUserFlightProfile, rankFlightWindows } from "@/lib/ml/baseline";
 
@@ -27,6 +27,7 @@ export default function ForecastPage() {
   const point = flight?.telemetry.find((item) => Number.isFinite(item.latitude) && Number.isFinite(item.longitude) && Boolean(item.timestamp));
   const hasForecastLocation = Boolean(point?.timestamp && Number.isFinite(point.latitude) && Number.isFinite(point.longitude));
   const weatherStatus = getWeatherProviderStatus(weatherMode);
+  const flightLabel = flight ? flightDisplayName(flight, flights) : "";
   const bestWindow = windows[0];
   const chronologicalWindows = [...windows].sort((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime));
   const visibleWindows = showAllWindows ? windows : windows.slice(0, 6);
@@ -90,7 +91,7 @@ export default function ForecastPage() {
           </div>
           <dl className="mt-5 space-y-4">
             <LocationMetric label="Coordinates" value={`${point.latitude.toFixed(4)}, ${point.longitude.toFixed(4)}`} />
-            <LocationMetric label="Source flight" value={flight.name} />
+            <LocationMetric label="Source flight" value={flightLabel} />
             <LocationMetric label="Weather provider" value={weatherStatus.label} />
             <LocationMetric label="Ranking mode" value="Future weather windows scored for flyability" />
           </dl>

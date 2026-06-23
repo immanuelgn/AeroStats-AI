@@ -15,7 +15,7 @@ import {
   explainPrediction,
   predictBatteryUsage,
 } from "@/lib/ml/baseline";
-import { latestFlight } from "@/lib/data/summaries";
+import { flightDisplayName, latestFlight } from "@/lib/data/summaries";
 import { getModelStatus, isBackendConfigured, joinWeatherBackend, trainModels, type BackendModelStatus } from "@/lib/api/client";
 
 export default function ModelPage() {
@@ -192,7 +192,7 @@ export default function ModelPage() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <pre className="mt-6 max-h-80 overflow-auto rounded-md bg-[#f5f5f7] p-4 text-xs leading-6 text-[#424245]">{JSON.stringify({ latestFlight: flight.name, features, userFlightProfile: profile, baselineExplanation: explanation }, null, 2)}</pre>
+            <pre className="mt-6 max-h-80 overflow-auto rounded-md bg-[#f5f5f7] p-4 text-xs leading-6 text-[#424245]">{JSON.stringify({ latestFlight: flightDisplayName(flight, flights), features, userFlightProfile: profile, baselineExplanation: explanation }, null, 2)}</pre>
           </div>
         </details>
       ) : null}

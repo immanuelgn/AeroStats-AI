@@ -12,6 +12,7 @@ import { TelemetryCharts } from "@/components/charts/TelemetryCharts";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { useUploadedData } from "@/lib/storage/DataProvider";
 import { formatDistance, formatDuration } from "@/lib/analytics/metrics";
+import { flightDisplayName } from "@/lib/data/summaries";
 import { buildFeaturesFromFlight, classifyFlightRisk, detectFlightAnomalies, predictBatteryUsage } from "@/lib/ml/baseline";
 import { deriveFlightMetrics, generateFlightEvents, generateFlightTags } from "@/lib/parsers/flightParsers";
 import { getHistoricalWeatherForFlight, getWeatherProviderStatus, joinWeatherToTelemetry, summarizeWeatherImpact } from "@/lib/weather/providers";
@@ -52,6 +53,7 @@ export default function FlightDetailPage() {
   const battery = predictBatteryUsage(features);
   const risk = classifyFlightRisk(features);
   const anomalies = detectFlightAnomalies(flight.telemetry);
+  const displayName = flightDisplayName(flight, flights);
   const insights = [
     flight.featureAvailability.speedChart && flight.featureAvailability.batteryAnalytics ? "Battery drain increased during higher-speed segments when speed variation was present." : undefined,
     flight.metrics.hoverRatio !== undefined && flight.metrics.hoverRatio > 0.25 ? "Hover-heavy section detected from low-speed telemetry points." : undefined,
@@ -82,7 +84,8 @@ export default function FlightDetailPage() {
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
         <div>
           <Link href="/flights" className="text-sm text-[#0066cc]">Back to flights</Link>
-          <h1 className="mt-2 text-3xl font-semibold text-[#1d1d1f]">{flight.name}</h1>
+          <h1 className="mt-2 text-3xl font-semibold text-[#1d1d1f]">{displayName}</h1>
+          <p className="mt-1 text-sm text-[#86868b]">{flight.sourceFileName}</p>
           <p className="mt-2 text-sm text-[#6e6e73]">Replay, event markers, telemetry, charts, and baseline insights are generated from this uploaded flight only.</p>
         </div>
         <button onClick={() => void joinWeather()} className="rounded-full border border-[#0071e3] px-5 py-2.5 text-sm font-medium text-[#0066cc] hover:bg-[#0071e3]/10">Join weather</button>

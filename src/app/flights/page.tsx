@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/empty-states/EmptyState";
 import { FlightCard } from "@/components/flights/FlightCard";
 import { useUploadedData } from "@/lib/storage/DataProvider";
+import { flightDisplayName } from "@/lib/data/summaries";
 
 export default function FlightsPage() {
   const { flights, backendSyncing } = useUploadedData();
@@ -11,7 +12,7 @@ export default function FlightsPage() {
   const [risk, setRisk] = useState("all");
   const filtered = useMemo(() => {
     return flights.filter((flight) => {
-      const haystack = [flight.name, flight.metadata.locationLabel, ...flight.tags].join(" ").toLowerCase();
+      const haystack = [flightDisplayName(flight, flights), flight.name, flight.sourceFileName, flight.metadata.locationLabel, ...flight.tags].join(" ").toLowerCase();
       const riskScore = flight.metrics.riskScore ?? 0;
       const riskMatch = risk === "all" || (risk === "low" && riskScore <= 42) || (risk === "medium" && riskScore > 42 && riskScore <= 68) || (risk === "high" && riskScore > 68);
       return haystack.includes(query.toLowerCase()) && riskMatch;
@@ -57,7 +58,7 @@ export default function FlightsPage() {
             </select>
           </div>
           <div className="grid gap-4 lg:grid-cols-2">
-            {filtered.map((flight) => <FlightCard key={flight.id} flight={flight} />)}
+            {filtered.map((flight) => <FlightCard key={flight.id} flight={flight} allFlights={flights} />)}
           </div>
         </>
       )}

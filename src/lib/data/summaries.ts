@@ -1,7 +1,11 @@
 import type { FlightRecord } from "@/types";
 
 export function latestFlight(flights: FlightRecord[]) {
-  return [...flights].sort((a, b) => Date.parse(b.metadata.startTime ?? b.importedAt) - Date.parse(a.metadata.startTime ?? a.importedAt))[0];
+  return [...flights].sort((a, b) => flightTime(b) - flightTime(a))[0];
+}
+
+export function chronologicalFlights(flights: FlightRecord[]) {
+  return [...flights].sort((a, b) => flightTime(a) - flightTime(b));
 }
 
 export function dashboardMetrics(flights: FlightRecord[]) {
@@ -18,12 +22,21 @@ export function dashboardMetrics(flights: FlightRecord[]) {
   return { totalDistance, avgDuration, avgBatteryDrain, avgRisk, bestEfficiency, latest: latestFlight(flights), totalBatteryUsed, totalTelemetryPoints, weatherJoinedCount };
 }
 
-export function flightDisplayName(flight: FlightRecord, index?: number) {
+export function flightDisplayName(flight: FlightRecord, flightsOrIndex?: FlightRecord[] | number) {
+  const index = Array.isArray(flightsOrIndex)
+    ? chronologicalFlights(flightsOrIndex).findIndex((item) => item.id === flight.id)
+    : flightsOrIndex;
   const date = flight.metadata.startTime ? new Date(flight.metadata.startTime) : undefined;
   const dateLabel = date && Number.isFinite(date.getTime())
     ? date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
     : undefined;
-  return dateLabel ? `Flight ${index !== undefined ? index + 1 : ""} · ${dateLabel}`.replace("Flight  ·", "Flight ·") : flight.name;
+  const number = index !== undefined && index >= 0 ? `Flight ${index + 1}` : "Flight";
+  return dateLabel ? `${number} - ${dateLabel}` : `${number} - ${flight.sourceFileName}`;
+}
+
+function flightTime(flight: FlightRecord) {
+  const parsed = Date.parse(flight.metadata.startTime ?? flight.importedAt);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function sumMetric(flights: FlightRecord[], key: keyof FlightRecord["metrics"]) {

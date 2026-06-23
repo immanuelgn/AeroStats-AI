@@ -6,7 +6,7 @@ import { FlightCard } from "@/components/flights/FlightCard";
 import { useUploadedData } from "@/lib/storage/DataProvider";
 
 export default function FlightsPage() {
-  const { flights } = useUploadedData();
+  const { flights, backendSyncing } = useUploadedData();
   const [query, setQuery] = useState("");
   const [risk, setRisk] = useState("all");
   const filtered = useMemo(() => {
@@ -35,7 +35,15 @@ export default function FlightsPage() {
           <Explainer title="Learn" body="Use each flight as training history so predictions improve as the dataset grows." />
         </div>
       </section>
-      {!flights.length ? (
+      {backendSyncing && !flights.length ? (
+        <section className="rounded-lg border border-black/[0.08] bg-white p-8 text-center">
+          <p className="text-sm font-medium text-[#0066cc]">Syncing saved flight records</p>
+          <h2 className="mt-2 text-2xl font-semibold text-[#1d1d1f]">Loading the shared Supabase dataset.</h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#6e6e73]">
+            New browsers do not have my local cache yet, so AeroStats AI is pulling the stored flights from the backend.
+          </p>
+        </section>
+      ) : !flights.length ? (
         <EmptyState title="No flights imported yet." body="My first supported flight log will create the initial replay, metrics, and model-training record." />
       ) : (
         <>

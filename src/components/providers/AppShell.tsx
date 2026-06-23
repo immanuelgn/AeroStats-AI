@@ -27,8 +27,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
 function ShellFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { flights, weatherMode } = useUploadedData();
+  const { flights, weatherMode, backendSyncing } = useUploadedData();
   const home = pathname === "/";
+  const datasetLabel = backendSyncing && !flights.length
+    ? "Loading shared flight dataset"
+    : flights.length
+      ? `${flights.length} flight${flights.length === 1 ? "" : "s"} analyzed`
+      : "Portfolio dataset awaiting first flight";
+
   return (
     <div className="min-h-screen bg-white text-[#1d1d1f]">
       <header className="sticky top-0 z-40 border-b border-black/[0.08] bg-white/80 backdrop-blur-xl">
@@ -39,7 +45,7 @@ function ShellFrame({ children }: { children: React.ReactNode }) {
           </Link>
           <div className="hidden items-center gap-2 text-xs text-[#6e6e73] lg:flex">
             <Database className="h-3.5 w-3.5" />
-            <span>{flights.length ? `${flights.length} flight${flights.length === 1 ? "" : "s"} analyzed` : "Portfolio dataset awaiting first flight"}</span>
+            <span>{datasetLabel}</span>
             <span className="h-1 w-1 rounded-full bg-[#d2d2d7]" />
             <WeatherStatus mode={weatherMode} />
           </div>

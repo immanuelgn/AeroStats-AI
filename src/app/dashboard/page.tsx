@@ -12,7 +12,7 @@ import { dashboardMetrics, flightDisplayName } from "@/lib/data/summaries";
 import { formatDistance } from "@/lib/analytics/metrics";
 
 export default function DashboardPage() {
-  const { flights, weatherMode } = useUploadedData();
+  const { flights, weatherMode, backendSyncing } = useUploadedData();
   const hasData = flights.length > 0;
   const metrics = dashboardMetrics(flights);
   const comparison = flights.map((flight, index) => ({
@@ -27,7 +27,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <DataStatusBanner hasData={hasData} />
+      <DataStatusBanner hasData={hasData} loading={backendSyncing && !hasData} />
       <header className="max-w-3xl">
         <p className="text-sm font-medium text-[#0066cc]">My flight story</p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight text-[#1d1d1f]">A clear view of every flight.</h1>
@@ -36,7 +36,15 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      {!hasData ? (
+      {backendSyncing && !hasData ? (
+        <section className="rounded-lg border border-black/[0.08] bg-white p-8 text-center">
+          <p className="text-sm font-medium text-[#0066cc]">Fetching saved flights</p>
+          <h2 className="mt-2 text-2xl font-semibold text-[#1d1d1f]">The backend is loading the portfolio dataset.</h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#6e6e73]">
+            This can take a little longer on Render free tier after the service sleeps. The flights are stored in Supabase and should appear automatically.
+          </p>
+        </section>
+      ) : !hasData ? (
         <>
           <EmptyState title="My first flight will start the dataset." body="Once a supported flight log is imported, this dashboard will show replay, performance trends, and the growing evidence used to validate the ML models." />
           <PipelinePreview />

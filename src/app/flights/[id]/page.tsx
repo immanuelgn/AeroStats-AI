@@ -90,7 +90,10 @@ export default function FlightDetailPage() {
           <p className="mt-1 text-sm text-[#86868b]">{flight.sourceFileName}</p>
           <p className="mt-2 text-sm text-[#6e6e73]">Replay, event markers, telemetry, charts, and baseline insights are generated from this uploaded flight only.</p>
         </div>
-        <button onClick={() => void joinWeather()} className="rounded-full border border-[#0071e3] px-5 py-2.5 text-sm font-medium text-[#0066cc] hover:bg-[#0071e3]/10">Join weather</button>
+        <div className="flex flex-col items-start gap-1 lg:items-end">
+          <button onClick={() => void joinWeather()} className="rounded-full border border-[#0071e3] px-5 py-2.5 text-sm font-medium text-[#0066cc] hover:bg-[#0071e3]/10">Join weather</button>
+          <p className="max-w-[260px] text-xs leading-5 text-[#86868b] lg:text-right">Adds historical wind and weather to the full flight.</p>
+        </div>
       </div>
       {weatherMessage ? <p className="rounded-lg border border-[#d2d2d7] bg-[#f5f5f7] p-3 text-sm text-[#6e6e73]">{weatherMessage}</p> : null}
 

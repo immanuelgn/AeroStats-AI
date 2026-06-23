@@ -17,6 +17,7 @@ export function TelemetryPanel({
   const altitudeReferenceNote = getAltitudeReferenceNote(point, previousPoint);
   const telemetryEventLabel = isUnreliableAltitudePoint(point, previousPoint) ? "Telemetry anomaly" : undefined;
   const isOverlay = variant === "overlay";
+  const weatherMissingLabel = point?.weather ? "Not available" : "Join weather first";
   const rows = [
     ["Timestamp", point?.timestamp ? new Date(point.timestamp).toLocaleString() : "Unavailable"],
     ["Altitude", point?.altitudeMeters !== undefined ? `${point.altitudeMeters.toFixed(1)} m` : "Unavailable"],
@@ -26,9 +27,9 @@ export function TelemetryPanel({
     ["Heading", point?.headingDegrees !== undefined ? `${point.headingDegrees.toFixed(0)} deg` : "Unavailable"],
     ["GPS satellites", point?.gpsSatellites !== undefined ? String(point.gpsSatellites) : "Unavailable"],
     ["Signal", point?.signalStrengthPercent !== undefined ? `${point.signalStrengthPercent.toFixed(0)}%` : "Unavailable"],
-    ["Wind estimate", point?.weather?.windSpeedKph !== undefined ? `${point.weather.windSpeedKph.toFixed(0)} kph` : "Join weather first"],
-    ["Temperature", point?.weather?.temperatureCelsius !== undefined ? `${point.weather.temperatureCelsius.toFixed(1)} C` : "Join weather first"],
-    ["Visibility", point?.weather?.visibilityMeters !== undefined ? formatDistance(point.weather.visibilityMeters) : "Join weather first"],
+    ["Wind estimate", point?.weather?.windSpeedKph !== undefined ? `${point.weather.windSpeedKph.toFixed(0)} kph` : weatherMissingLabel],
+    ["Temperature", point?.weather?.temperatureCelsius !== undefined ? `${point.weather.temperatureCelsius.toFixed(1)} C` : weatherMissingLabel],
+    ["Visibility", point?.weather?.visibilityMeters !== undefined ? formatDistance(point.weather.visibilityMeters) : weatherMissingLabel],
     ["Event", event?.label ?? point?.eventType ?? telemetryEventLabel ?? "None"],
   ];
   return (
